@@ -51,8 +51,6 @@ class Game:
         self.witch = None
         self.boo = None # ✨ The Player ✨
 
-        Key(self, 200, 80)
-
         self.startTitleScreen()
 
     def start(self):
@@ -85,6 +83,7 @@ class Game:
             Witch(game, 120, 120)
             Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
             BatCompanion(self, self.boo)
+            Key(self, 200, 80)
             # Kid(self, [(160, 168), (160, 8)])
 
     def clean(self):
@@ -137,11 +136,13 @@ class Kid(pygame.sprite.Sprite):
 
         self.images = {
             "down": pygame.image.load("assets/kid/down.png"),
-            #"down_walking": pygame.image.load("assets/kid/down_walking.png"),
+            "down_walking_1": pygame.image.load("assets/kid/down_walking_1.png"),
+            "down_walking_2": pygame.image.load("assets/kid/down_walking_2.png"),
             "left": pygame.image.load("assets/kid/left.png"),
             "left_walking": pygame.image.load("assets/kid/left_walking.png"),
             "up": pygame.image.load("assets/kid/up.png"),
-            #"up_walking": pygame.image.load("assets/kid/up_walking.png"),
+            "up_walking_1": pygame.image.load("assets/kid/up_walking_1.png"),
+            "up_walking_2": pygame.image.load("assets/kid/up_walking_2.png"),
             "right": pygame.image.load("assets/kid/right.png"),
             "right_walking": pygame.image.load("assets/kid/right_walking.png"),
         }
@@ -182,6 +183,11 @@ class Kid(pygame.sprite.Sprite):
         if self.dir == "left" or self.dir == "right":
             if (math.floor(frame_count / 10)) % 2 == 0:
                 image = self.images[self.dir + "_walking"]
+        elif self.dir == "up" or self.dir == "down":
+            if (math.floor(frame_count / 10)) % 2 == 0:
+                image = self.images[self.dir + "_walking_1"]
+            else:
+                image = self.images[self.dir + "_walking_2"]
         self.game.screen.blit(image, (self.x, self.y))
 
 
