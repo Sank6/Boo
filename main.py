@@ -87,17 +87,41 @@ class Game:
         self.level_start_time = time.time()
         self.boo = Boo(self)
         self.backgrounds = [pygame.image.load(f"assets/level{self.level}_background.png")]
-        Door(self, 8, 10)
+
 
         ##load game programatically
-        self.boo.x = 42
-        self.boo.y = 10
-        Barrier(self, 24, 10)
-        Barrier(self, 24, 26)
-        Barrier(self, 24, 42)
-        Witch(game, 120, 120)
-        Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
-        Key(self, 200, 80, 1)
+        lines = []
+        f = open(f"levels/{self.level}.txt", "r")
+        lines = f.readlines()
+        x,y,k=0,0,0
+        kid_coords = {}
+        for line in lines:
+            for char in line:
+                if char == "#":
+                    Barrier(self, 16*x+8, 16*y+10)
+                elif char == "K":
+                    Key(self, 16*x+8, 16*y+10, k)
+                    k += 1
+                elif char == "D":
+                    Door(game, 16*x+8, 16*y+10)
+                elif char == "W":
+                    Witch(self, 16*x+8, 16*y-4)
+                elif char == "P":
+                    self.boo.x = 16*x+8
+                    self.boo.y = 16*y+10
+                elif char == " ":
+                    pass
+                elif char.isnumeric():
+                    if char in kid_coords:
+                        kid_coords[char].append((16*x+8, 16*y-4))
+                    else:
+                        kid_coords[char] = [(16*x+8, 16*y-4)]
+                x+=1
+            x=0
+            y+=1
+        
+        for key in kid_coords:
+            Kid(self, kid_coords[key])
 
         BatCompanion(self, self.boo)
 
