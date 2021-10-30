@@ -65,17 +65,19 @@ class Game:
         self.clean()
         if self.level == 1:
             # Level 1 boo starting position
-            self.boo.x = 30
-            self.boo.y = 30
+            self.boo.x = 33
+            self.boo.y = 33
             self.boo.draw()
             self.backgrounds = [pygame.image.load("assets/level1_background.png")]
 
             # Level 1 barriers
             barriers = [
-                Barrier(self, 16, 16),
-                Barrier(self, 16, 32),
-                Barrier(self, 16, 64),
+                Barrier(self, 8, 10),
+                Barrier(self, 8, 24),
+                Barrier(self, 8, 38),
             ]
+
+            Kid(self, [(160, 8), (160, 168)])
 
     def clean(self):
         self.all_sprites.empty()
@@ -83,7 +85,7 @@ class Game:
         self.kid_sprites.empty()
         self.witch = None
         self.boo = Boo(self)
-    
+
     def control_loop(self):
         frame_count = 0
         while self.running:
@@ -91,7 +93,7 @@ class Game:
             self.screen.blit(self.backgrounds[math.floor(frame_count / 10) % len(self.backgrounds)], (0, 0))
 
             self.all_sprites.update()
-            
+
             # This needs to be outside events so holding a key moves Boo
             if self.boo != None:
                 self.boo.move(pygame.key.get_pressed())
@@ -111,19 +113,16 @@ class Game:
         pygame.display.flip()
         self.clock.tick(60)
 
-class Tree(pygame.sprite.Sprite):
-    def __init__(self, x_position, y_position):
-        self.x = x_position
-        self.y = y_position
 
 class Kid(pygame.sprite.Sprite):
     def __init__(self, game, points):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
+        game.kid_sprites.add(self)
 
         self.game = game
         self.points = points
-        self.previousPointIndex = 0
+        self.currentTargetIndex = 0
 
         self.x = points[0][0]
         self.y = points[0][1]
@@ -145,21 +144,22 @@ class Kid(pygame.sprite.Sprite):
 
         if self.x == nextPoint[0] and self.y == nextPoint[1]:
             self.previousPointIndex += 1
-        
+
         self.game.screen.blit(self.image, (self.x, self.y))
-        
+
 class Barrier(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
-        
+        game.barrier_sprites.add(self)
+
         self.game = game
-        self.x = x
-        self.y = y
-        self.width = 16
-        self.height = 16
+        self.x = x+1
+        self.y = y+1
+        self.width = 14
+        self.height = 14
         self.image = pygame.image.load("assets/barrier.png")
-    
+
     def draw(self):
         self.game.screen.blit(self.image, (self.x, self.y))
 
@@ -194,40 +194,39 @@ class Boo(pygame.sprite.Sprite):
         if keys[LEFT_KEY]:
             x_delta = -1
             self.moving = "left"
-        elif keys[RIGHT_KEY]:
+        if keys[RIGHT_KEY]:
             x_delta = 1
             self.moving = "right"
-        elif keys[UP_KEY]:
+        if keys[UP_KEY]:
             y_delta = -1
             self.moving = "up"
-        elif keys[DOWN_KEY]:
+        if keys[DOWN_KEY]:
             y_delta = 1
             self.moving = "down"
 
         new_x = self.x + x_delta
         new_y = self.y + y_delta
 
+        # Check if boo hit a wall
         for barrier in self.game.barrier_sprites:
-            #tbh idk what you did here
-            # if self.rect.colliderect(barrier.rect):
-            #     if x_delta != 0:
-            #         if new_x < barrier.x+barrier.width or new_x+self.width > barrier.x:
-            #             x_delta = 0
-            #     if y_delta != 0:
-            #         if new_y < barrier.y or new_y+self.height > barrier.y:
-            #             y_delta = 0
-            pass
-        if x_delta != 0:
-            if new_x < 15 or new_x+self.width > 240-15:
+            check_x = lambda x: barrier.x <= x <= barrier.x+barrier.width
+            check_y = lambda y: barrier.y <= y <= barrier.y+barrier.height
+
+            in_x_axis = lambda x: check_x(x) or check_x(x+self.width) or check_x(new_x+self.width/2)
+            in_y_axis = lambda y: check_y(y) or check_y(y+self.height) or check_y(new_y+self.height/2)
+
+            if in_y_axis(new_y) and in_x_axis(new_x):
                 x_delta = 0
-        if y_delta != 0:
-            if new_y < 15 or new_y+self.height > 180-15:
                 y_delta = 0
+
+        # Check that boo doesn't escape his container
+        if new_x < 8 or new_x+self.width > 240-8:
+            x_delta = 0
+        if new_y < 10 or new_y+self.height > 180-10:
+            y_delta = 0
 
         self.x += x_delta
         self.y += y_delta
-
-
 
 
 class Button(pygame.sprite.Sprite):
