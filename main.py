@@ -113,7 +113,7 @@ class Game:
         self.clean()
 
 
-    def next_level():
+    def next_level(self):
         self.clean()
 
 
@@ -360,14 +360,14 @@ class Boo(pygame.sprite.Sprite):
         new_x = self.x + x_delta
         new_y = self.y + y_delta
 
-        check_x = lambda x: barrier.x <= x <= barrier.x+barrier.width
-        check_y = lambda y: barrier.y <= y <= barrier.y+barrier.height
-
-        in_x_axis = lambda x: check_x(x) or check_x(x+self.width) or check_x(new_x+self.width/2)
-        in_y_axis = lambda y: check_y(y) or check_y(y+self.height) or check_y(new_y+self.height/2)
-
         # Check if boo hit a key
         for key in self.game.uncaptured_key_sprites:
+            check_x = lambda x: key.x <= x <= key.x+key.width
+            check_y = lambda y: key.y <= y <= key.y+key.height
+
+            in_x_axis = lambda x: check_x(x) or check_x(x+self.width) or check_x(new_x+self.width/2)
+            in_y_axis = lambda y: check_y(y) or check_y(y+self.height) or check_y(new_y+self.height/2)
+
             if in_y_axis(new_y) and in_x_axis(new_x):
                 self.game.captured_key_sprites.add(key)
                 self.game.all_sprites.remove(key)
@@ -376,9 +376,15 @@ class Boo(pygame.sprite.Sprite):
 
         # Check if boo hit a wall
         for barrier in self.game.barrier_sprites:
+            check_x = lambda x: barrier.x <= x <= barrier.x+barrier.width
+            check_y = lambda y: barrier.y <= y <= barrier.y+barrier.height
+
+            in_x_axis = lambda x: check_x(x) or check_x(x+self.width) or check_x(new_x+self.width/2)
+            in_y_axis = lambda y: check_y(y) or check_y(y+self.height) or check_y(new_y+self.height/2)
+
             if in_y_axis(new_y) and in_x_axis(new_x):
                 if hasattr(barrier, "door") and len(self.game.uncaptured_key_sprites) == 0: # DOOR
-                    self.game.level_completed()
+                    self.game.running = False
                 x_delta = 0
                 y_delta = 0
 
