@@ -51,6 +51,8 @@ class Game:
         self.witch = None
         self.boo = None # ✨ The Player ✨
 
+        Key(self, 200, 80)
+
         self.startTitleScreen()
 
     def start(self):
@@ -176,6 +178,9 @@ class Kid(pygame.sprite.Sprite):
 
     def draw(self, frame_count):
         image = self.images[self.dir]
+        if self.dir == "left" or self.dir == "right":
+            if (math.floor(frame_count / 10)) % 2 == 0:
+                image = self.images[self.dir + "_walking"]
         self.game.screen.blit(image, (self.x, self.y))
 
 class Witch(pygame.sprite.Sprite):
@@ -280,6 +285,9 @@ class Boo(pygame.sprite.Sprite):
         self.game = game
         self.moving = "down" # "up", "down", "left", "right"
 
+        self.up = True
+        self.frames_left = 10
+
         self.images = {
             "left": pygame.image.load(f"assets/boo/left.png"),
             "right": pygame.image.load(f"assets/boo/right.png"),
@@ -328,7 +336,15 @@ class Boo(pygame.sprite.Sprite):
             x_delta = 0
         if new_y < 10 or new_y+self.height > 180-10:
             y_delta = 0
-
+        
+        # Animate Boo
+        if self.frames_left > 0:
+            self.frames_left -= 1
+        else:
+            self.frames_left = 10
+            self.y += 1 if self.up else -1
+            self.up = not self.up
+        
         self.x += x_delta
         self.y += y_delta
 
@@ -337,10 +353,11 @@ class Key(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
 
+        self.game = game
         self.x = x
         self.y = y
 
-        self.image = pygame.image.load("assets/key.png")
+        self.image = pygame.image.load("assets/keys/1.png")
 
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
