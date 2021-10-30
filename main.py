@@ -78,13 +78,11 @@ class Game:
                 Barrier(self, 8, 24),
                 Barrier(self, 8, 38),
             ]
-
-            #Kid(self, [(160, 8), (160, 168)])
+            
             Witch(game, 120, 120)
             Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
             BatCompanion(self, self.boo)
             Key(self, 200, 80)
-            # Kid(self, [(160, 168), (160, 8)])
 
     def clean(self):
         self.all_sprites.empty()
