@@ -44,11 +44,12 @@ class Game:
         self.kid_sprites = pygame.sprite.Group()
         self.witch_sprites = pygame.sprite.Group()
         self.potion_sprites = pygame.sprite.Group()
+        self.uncaptured_key_sprites = pygame.sprite.Group()
+        self.captured_key_sprites = pygame.sprite.Group()
+
         # Custom Sprites
         self.witch = None
         self.boo = None # ✨ The Player ✨
-
-        Key(self, 200, 80)
 
         self.start_title_screen()
 
@@ -98,6 +99,7 @@ class Game:
             Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
             BatCompanion(self, self.boo)
             Key(self, 200, 80)
+            Door(self, 10, 80)
 
     def clean(self):
         self.all_sprites.empty()
@@ -133,6 +135,7 @@ class Game:
     def update(self):
         pygame.display.flip()
         self.clock.tick(60)
+
 
 class Kid(pygame.sprite.Sprite):
     def __init__(self, game, points):
@@ -341,6 +344,20 @@ class Boo(pygame.sprite.Sprite):
         new_x = self.x + x_delta
         new_y = self.y + y_delta
 
+        # Check if boo hit a key
+        for key in self.game.uncaptured_key_sprites:
+            check_x = lambda x: key.x <= x <= key.x+key.width
+            check_y = lambda y: key.y <= y <= key.y+key.height
+
+            in_x_axis = lambda x: check_x(x) or check_x(x+self.width) or check_x(new_x+self.width/2)
+            in_y_axis = lambda y: check_y(y) or check_y(y+self.height) or check_y(new_y+self.height/2)
+
+            if in_y_axis(new_y) and in_x_axis(new_x):
+                self.game.captured_key_sprites.add(key)
+                self.game.all_sprites.remove(key)
+                self.game.uncaptured_key_sprites.remove(key)
+                self.keys.append(key)
+
         # Check if boo hit a wall
         for barrier in self.game.barrier_sprites:
             check_x = lambda x: barrier.x <= x <= barrier.x+barrier.width
@@ -350,6 +367,8 @@ class Boo(pygame.sprite.Sprite):
             in_y_axis = lambda y: check_y(y) or check_y(y+self.height) or check_y(new_y+self.height/2)
 
             if in_y_axis(new_y) and in_x_axis(new_x):
+                if hasattr(barrier, "door") and len(self.game.uncaptured_key_sprites) == 0: # DOOR
+                    self.game.running = False
                 x_delta = 0
                 y_delta = 0
 
@@ -442,16 +461,41 @@ class Key(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
+        game.uncaptured_key_sprites.add(self)
 
         self.game = game
         self.x = x
         self.y = y
+        self.width = 16
+        self.height = 16
 
-        self.image = pygame.image.load("assets/keys/1.png")
+        self.keys = [
+            pygame.image.load("assets/keys/1.png"),
+            pygame.image.load("assets/keys/2.png"),
+            pygame.image.load("assets/keys/3.png"),
+        ]
+
+    def draw(self, frame_count):
+        self.game.screen.blit(self.keys[0], (self.x, self.y))
+
+class Door(pygame.sprite.Sprite):
+    def __init__(self, game, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        game.barrier_sprites.add(self)
+
+        self.game = game
+        self.x = x
+        self.y = y
+        self.width = 16
+        self.height = 16
+
+        self.door = True
+
+        self.image = pygame.image.load("assets/door.png")
 
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
-
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, game, x, y, width, height, text, callback):
