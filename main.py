@@ -480,6 +480,7 @@ class Key(pygame.sprite.Sprite):
     def draw(self, frame_count):
         self.game.screen.blit(self.keys[self.keyType], (self.x, self.y))
 
+
 class Door(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -498,6 +499,7 @@ class Door(pygame.sprite.Sprite):
 
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
+
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, game, x, y, width, height, text, callback):
