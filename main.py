@@ -34,6 +34,7 @@ class Game:
     def __init__(self, s_width, s_height):
         self.screen = pygame.display.set_mode((s_width, s_height), flags=pygame.SCALED)
         self.level = 1
+        self.levels = 1
         self.paused = False
         self.running = True
         self.clock = pygame.time.Clock()
@@ -50,6 +51,8 @@ class Game:
         # Custom Sprites
         self.witch = None
         self.boo = None # ✨ The Player ✨
+        self.level_start_time = time.time()
+        self.time_taken_in_game = 0
 
         self.start_title_screen()
 
@@ -81,25 +84,38 @@ class Game:
 
     def play(self, button, event, game):
         self.clean()
+        self.level_start_time = time.time()
         self.boo = Boo(self)
-        if self.level == 1:
-            # Level 1 boo starting position
-            self.boo.x = 33
-            self.boo.y = 33
-            self.backgrounds = [pygame.image.load("assets/level1_background.png")]
+        self.backgrounds = [pygame.image.load(f"assets/level{self.level}_background.png")]
+        Door(self, 8, 10)
 
-            # Level 1 barriers
-            barriers = [
-                Barrier(self, 8, 10),
-                Barrier(self, 8, 24),
-                Barrier(self, 8, 38),
-            ]
-            
-            Witch(game, 120, 120)
-            Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
-            BatCompanion(self, self.boo)
-            Key(self, 200, 80, 1)
-            Door(self, 10, 80)
+        ##load game programatically
+        self.boo.x = 42
+        self.boo.y = 10
+        Barrier(self, 24, 10)
+        Barrier(self, 24, 26)
+        Barrier(self, 24, 42)
+        Witch(game, 120, 120)
+        Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
+        Key(self, 200, 80, 1)
+
+        BatCompanion(self, self.boo)
+
+    def level_completed(self):
+        self.time_taken_in_game += time.time() - self.level_start_time
+
+        if self.level == self.levels:
+            self.game_completed()
+        else:
+            self.next_level()
+
+    def game_completed(self):
+        self.clean()
+
+
+    def next_level(self):
+        self.clean()
+
 
     def clean(self):
         self.all_sprites.empty()
@@ -496,6 +512,9 @@ class Door(pygame.sprite.Sprite):
         self.door = True
 
         self.image = pygame.image.load("assets/door.png")
+
+    def update(self):
+        pass
 
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
