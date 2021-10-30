@@ -48,13 +48,9 @@ class Game:
         self.witch = None
         self.boo = None # ✨ The Player ✨
 
-<<<<<<< HEAD
         Key(self, 200, 80)
 
         self.start_title_screen()
-=======
-        self.startTitleScreen()
->>>>>>> 9dd127f8114870046a4f320479326fd99ff5017f
 
     def start(self):
         self.control_loop()
