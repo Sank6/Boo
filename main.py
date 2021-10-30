@@ -101,6 +101,21 @@ class Game:
 
         BatCompanion(self, self.boo)
 
+    def restart_level(self):
+        self.time_taken_in_game += time.time() - self.level_start_time
+        self.clean()
+
+        pygame.draw.rect(surface, (0,0,0), pygame.Rect(0, 0, 240, 180))
+
+        pygame.font.Font("assets/font.ttf", 30)
+        text = self.font.render(f"Try again...", True, (255,255,255))
+        text_rect = text.get_rect(center=(240/2, 180/2))
+        screen.blit(text, text_rect)
+
+        pygame.time.wait(3000)
+
+        self.play(None, None, None)
+
     def level_completed(self):
         self.time_taken_in_game += time.time() - self.level_start_time
 
@@ -111,10 +126,23 @@ class Game:
 
     def game_completed(self):
         self.clean()
+        self.running = False
 
 
     def next_level(self):
+        self.level += 1
         self.clean()
+
+        pygame.draw.rect(surface, (0,0,0), pygame.Rect(0, 0, 240, 180))
+
+        pygame.font.Font("assets/font.ttf", 30)
+        text = self.font.render(f"Level {self.level}", True, (255,255,255))
+        text_rect = text.get_rect(center=(240/2, 180/2))
+        screen.blit(text, text_rect)
+
+        pygame.time.wait(3000)
+
+        self.play(None, None, None)
 
 
     def clean(self):
