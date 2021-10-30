@@ -42,7 +42,7 @@ class Game:
         # Custom Sprites
         self.background = pygame.image.load("assets/title_background.png")
         self.witch = None
-        self.boo = Boo(self) # ✨ The Player ✨
+        self.boo = None # ✨ The Player ✨
 
         self.startTitleScreen()
 
@@ -58,23 +58,34 @@ class Game:
         self.running = False
 
     def play(self, button, event, game):
+        self.clean()
         if self.level == 1:
-
             # Level 1 boo starting position
             self.boo.x = 30
             self.boo.y = 30
             self.boo.draw()
+            self.background = pygame.image.load("assets/level1_background.png")
 
+    def clean(self):
+        self.all_sprites.empty()
+        self.barrier_sprites.empty()
+        self.kid_sprites.empty()
+        self.witch = None
+        self.boo = Boo(self)
+    
     def control_loop(self):
         while self.running:
             self.screen.blit(self.background, (0, 0))
 
             self.all_sprites.update()
+            
+            # This needs to be outside events so holding a key moves Boo
+            if self.boo != None:
+                self.boo.move(pygame.key.get_pressed())
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                if event.type == pygame.KEYDOWN:
-                    self.boo.move(event)
             for sprite in self.all_sprites:
                 if isinstance(sprite, Button):
                     sprite.check_state(event)
@@ -104,14 +115,34 @@ class Kid(pygame.sprite.Sprite):
         self.x = points[0][0]
         self.y = points[0][1]
 
+        self.image = pygame.image.load("assets/kid.png")
+
     def draw(self):
         lastPoint = self.points[self.previousPointIndex+1]
         nextPoint = self.points[self.previousPointIndex+1]
+
+        if nextPoint[0] < self.x:
+            self.x -= 1
+        elif nextPoint[0] > self.x:
+            self.x += 1
+        if nextPoint[1] < self.y:
+            self.y -= 1
+        elif nextPoint[1] > self.y:
+            self.y += 1
+
+        if self.x == nextPoint[0] and self.y == nextPoint[1]:
+            self.previousPointIndex += 1
+        
+        self.game.screen.blit(self.image, (self.x, self.y))
+        
 
 class Boo(pygame.sprite.Sprite):
     def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
+
+        self.width = 16
+        self.height = 16
         self.x = 0
         self.y = 0
         self.keys = []
@@ -129,18 +160,22 @@ class Boo(pygame.sprite.Sprite):
         boo = self.images[self.moving]
         self.game.screen.blit(boo, (self.x, self.y))
 
-    def move(self, event):
+    def move(self, keys):
         x_delta = 0
         y_delta = 0
 
-        if event.key == LEFT_KEY:
+        if keys[LEFT_KEY]:
             x_delta = -1
-        elif event.key == RIGHT_KEY:
+            self.moving = "left"
+        elif keys[RIGHT_KEY]:
             x_delta = 1
-        elif event.key == UP_KEY:
+            self.moving = "right"
+        elif keys[UP_KEY]:
             y_delta = -1
-        elif event.key == DOWN_KEY:
+            self.moving = "up"
+        elif keys[DOWN_KEY]:
             y_delta = 1
+            self.moving = "down"
 
         new_x = self.x + x_delta
         new_y = self.y + y_delta
