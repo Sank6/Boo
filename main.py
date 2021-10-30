@@ -66,6 +66,13 @@ class Game:
             self.boo.draw()
             self.background = pygame.image.load("assets/level1_background.png")
 
+            # Level 1 barriers
+            # barriers = [
+            #     Barrier(self, 16, 16),
+            #     Barrier(self, 16, 32),
+            #     Barrier(self, 16, 64),
+            # ]
+
     def clean(self):
         self.all_sprites.empty()
         self.barrier_sprites.empty()
@@ -135,6 +142,18 @@ class Kid(pygame.sprite.Sprite):
         
         self.game.screen.blit(self.image, (self.x, self.y))
         
+class Barrier(pygame.sprite.Sprite):
+    def __init__(self, game, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        
+        self.game = game
+        self.x = x
+        self.y = y
+        self.image = pygame.image.load("assets/barrier.png")
+    
+    def draw(self):
+        self.game.screen.blit(self.image, (self.x, self.y))
 
 class Boo(pygame.sprite.Sprite):
     def __init__(self, game):
@@ -181,14 +200,15 @@ class Boo(pygame.sprite.Sprite):
         new_y = self.y + y_delta
 
         for barrier in self.game.barrier_sprites:
-            if self.rect.colliderect(barrier.rect):
-                if x_delta != 0:
-                    if new_x < barrier.x+barrier.width or new_x+self.width > barrier.x:
-                        x_delta = 0
-                if y_delta != 0:
-                    if new_y < barrier.y or new_y+self.height > barrier.y:
-                        y_delta = 0
-
+            #tbh idk what you did here
+            # if self.rect.colliderect(barrier.rect):
+            #     if x_delta != 0:
+            #         if new_x < barrier.x+barrier.width or new_x+self.width > barrier.x:
+            #             x_delta = 0
+            #     if y_delta != 0:
+            #         if new_y < barrier.y or new_y+self.height > barrier.y:
+            #             y_delta = 0
+            pass
         if x_delta != 0:
             if new_x < 15 or new_x+self.width > 240-15:
                 x_delta = 0
