@@ -134,16 +134,15 @@ class Kid(pygame.sprite.Sprite):
 
         self.images = {
             "down": pygame.image.load("assets/kid/down.png"),
-            "down_walking": pygame.image.load("assets/kid/down_walking.png"),
+            #"down_walking": pygame.image.load("assets/kid/down_walking.png"),
             "left": pygame.image.load("assets/kid/left.png"),
             "left_walking": pygame.image.load("assets/kid/left_walking.png"),
             "up": pygame.image.load("assets/kid/up.png"),
-            "up_walking": pygame.image.load("assets/kid/up_walking.png"),
+            #"up_walking": pygame.image.load("assets/kid/up_walking.png"),
             "right": pygame.image.load("assets/kid/right.png"),
             "right_walking": pygame.image.load("assets/kid/right_walking.png"),
         }
         self.dir = "down"
-
 
     def update(self):
         if len(self.points) == 0: return None
