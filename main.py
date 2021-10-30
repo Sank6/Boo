@@ -82,6 +82,7 @@ class Game:
             #Kid(self, [(160, 8), (160, 168)])
             Witch(game, 120, 120)
             Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
+            BatCompanion(self, self.boo)
             # Kid(self, [(160, 168), (160, 8)])
 
     def clean(self):
@@ -178,6 +179,7 @@ class Kid(pygame.sprite.Sprite):
         image = self.images[self.dir]
         self.game.screen.blit(image, (self.x, self.y))
 
+
 class Witch(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -267,6 +269,7 @@ class Barrier(pygame.sprite.Sprite):
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
 
+
 class Boo(pygame.sprite.Sprite):
     def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
@@ -281,10 +284,10 @@ class Boo(pygame.sprite.Sprite):
         self.moving = "down" # "up", "down", "left", "right"
 
         self.images = {
-            "left": pygame.image.load(f"assets/boo/left.png"),
-            "right": pygame.image.load(f"assets/boo/right.png"),
-            "up": pygame.image.load(f"assets/boo/up.png"),
-            "down": pygame.image.load(f"assets/boo/down.png"),
+            "left": pygame.image.load("assets/boo/left.png"),
+            "right": pygame.image.load("assets/boo/right.png"),
+            "up": pygame.image.load("assets/boo/up.png"),
+            "down": pygame.image.load("assets/boo/down.png"),
         }
 
     def draw(self, frame_count):
@@ -332,6 +335,45 @@ class Boo(pygame.sprite.Sprite):
         self.x += x_delta
         self.y += y_delta
 
+
+class BatCompanion(pygame.sprite.Sprite):
+    def __init__(self, game, parent):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        self.game = game
+
+        self.images = [
+            pygame.image.load("assets/bat/1.png"),
+            pygame.image.load("assets/bat/2.png"),
+            pygame.image.load("assets/bat/3.png")
+        ]
+        self.parent = parent
+        self.width = 16
+        self.height = 16
+        self.x = self.parent.x - self.width - 3
+        self.y = self.parent.y - self.height - 3
+        self.max_displacement = 8
+
+
+    def update(self):
+        target_x = self.parent.x - self.width - 3
+        target_y = self.parent.y - self.height - 3
+
+        if abs((target_x - self.x)) > self.max_displacement:
+            x_dir = (target_x - self.x) / abs((target_x - self.x))
+            self.x += 0.3 * x_dir
+
+        if abs((target_y - self.y)) > self.max_displacement:
+            y_dir = (target_y - self.y) / abs((target_y - self.y))
+            self.y += 0.3 * y_dir
+
+
+    def draw(self, frame_count):
+        image = self.images[math.floor(frame_count / 10) % len(self.images)]
+        self.game.screen.blit(image, (self.x, self.y))
+
+
+
 class Key(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -344,6 +386,7 @@ class Key(pygame.sprite.Sprite):
 
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
+
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, game, x, y, width, height, text, callback):
