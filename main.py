@@ -19,18 +19,30 @@ BUTTON_PRESSED_MAIN = (162, 88, 69)
 ## hovered button
 BUTTON_HOVERED_MAIN = (207, 157, 122)
 
+# Keybinds
+LEFT_KEY = pygame.K_LEFT
+RIGHT_KEY = pygame.K_RIGHT
+UP_KEY = pygame.K_UP
+DOWN_KEY = pygame.K_DOWN
+
 pygame.init()
 
 class Game:
     def __init__(self, s_width, s_height):
         self.screen = pygame.display.set_mode((s_width, s_height), flags=pygame.SCALED)
-        self.player = None
         self.level = 1
         self.paused = False
         self.running = True
-        self.all_sprites = pygame.sprite.Group()
         self.clock = pygame.time.Clock()
+
+        self.all_sprites = pygame.sprite.Group()
+
+        self.barrier_sprites = pygame.sprite.Group()
+        self.kid_sprites = pygame.sprite.Group()
+        # Custom Sprites
         self.background = pygame.image.load("assets/title_background.png")
+        self.witch = None
+        self.boo = Boo(self) # ✨ The Player ✨
 
         self.startTitleScreen()
 
@@ -38,16 +50,20 @@ class Game:
         self.control_loop()
 
     def startTitleScreen(self):
-        playButton = Button(self, 65, 86, 111, 25, "NEW GAME", self.play)
-        playButton = Button(self, 65, 115, 111, 25, "HI-SCORES", self.play)
-        quitButton = Button(self, 80, 145, 80, 20, "QUIT", self.quit)
-
+        playButton = Button(self, 65, 90, 110, 25, "NEW GAME", self.play)
+        playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.play)
+        quitButton = Button(self, 80, 150, 80, 20, "QUIT", self.quit)
 
     def quit(self, button, event, game):
         self.running = False
 
     def play(self, button, event, game):
-        pass
+        if self.level == 1:
+
+            # Level 1 boo starting position
+            self.boo.x = 30
+            self.boo.y = 30
+            self.boo.draw()
 
     def control_loop(self):
         while self.running:
@@ -57,6 +73,8 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                if event.type == pygame.KEYDOWN:
+                    self.boo.move(event)
             for sprite in self.all_sprites:
                 if isinstance(sprite, Button):
                     sprite.check_state(event)
@@ -69,43 +87,84 @@ class Game:
         pygame.display.flip()
         self.clock.tick(60)
 
-"""
-game = Game(640, 480)
-player = Player()
-game.all_sprites.add(player)
-"""
-
-"""
-#keeping track of ghost time
-start_time = time.start_time
-while start_time != 600:
-    keep running game
-"""
-
-"""
-#creating a quit button
-quitButton = Button(100, 100, 100, 100, black, "Quit Game", quit)
-#creating a start game button
-startButton = Button(100, 100, 100, 100, black, "Join Game", start)
-"""
-
-class Box(pygame.sprite.Sprite):
-    def __init__(self, x_position, y_position, width, height, colour, text):
+class Tree(pygame.sprite.Sprite):
+    def __init__(self, x_position, y_position):
         self.x = x_position
         self.y = y_position
-        self.width = width
-        self.height = height
-        self.colour = colour
-        self.text = text
-        self.font = pygame.font.Font("assets/font.ttf", height-10)
 
-
-class Player(pygame.sprite.Sprite):
-    def __init__(self, x_position, y_position):
+class Kid(pygame.sprite.Sprite):
+    def __init__(self, game, points):
         pygame.sprite.Sprite.__init__(self)
-        self.xPosition = x
-        self.yPosition = y
+        game.all_sprites.add(self)
+
+        self.game = game
+        self.points = points
+        self.previousPointIndex = 0
+
+        self.x = points[0][0]
+        self.y = points[0][1]
+
+    def draw(self):
+        lastPoint = self.points[self.previousPointIndex+1]
+        nextPoint = self.points[self.previousPointIndex+1]
+
+class Boo(pygame.sprite.Sprite):
+    def __init__(self, game):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        self.x = 0
+        self.y = 0
         self.keys = []
+        self.game = game
+        self.moving = "down" # "up", "down", "left", "right"
+
+        self.images = {
+            "left": pygame.image.load(f"assets/boo/left.png"),
+            "right": pygame.image.load(f"assets/boo/right.png"),
+            "up": pygame.image.load(f"assets/boo/up.png"),
+            "down": pygame.image.load(f"assets/boo/down.png"),
+        }
+
+    def draw(self):
+        boo = self.images[self.moving]
+        self.game.screen.blit(boo, (self.x, self.y))
+
+    def move(self, event):
+        x_delta = 0
+        y_delta = 0
+
+        if event.key == LEFT_KEY:
+            x_delta = -1
+        elif event.key == RIGHT_KEY:
+            x_delta = 1
+        elif event.key == UP_KEY:
+            y_delta = -1
+        elif event.key == DOWN_KEY:
+            y_delta = 1
+
+        new_x = self.x + x_delta
+        new_y = self.y + y_delta
+
+        for barrier in self.game.barrier_sprites:
+            if self.rect.colliderect(barrier.rect):
+                if x_delta != 0:
+                    if new_x < barrier.x+barrier.width or new_x+self.width > barrier.x:
+                        x_delta = 0
+                if y_delta != 0:
+                    if new_y < barrier.y or new_y+self.height > barrier.y:
+                        y_delta = 0
+
+        if x_delta != 0:
+            if new_x < 15 or new_x+self.width > 240-15:
+                x_delta = 0
+        if y_delta != 0:
+            if new_y < 15 or new_y+self.height > 180-15:
+                y_delta = 0
+
+        self.x += x_delta
+        self.y += y_delta
+
+
 
 
 class Button(pygame.sprite.Sprite):
@@ -181,11 +240,7 @@ class Button(pygame.sprite.Sprite):
 
 
 
-def main():
-    game = Game(240, 180)
-    game.start()
-
-
 
 if __name__ == "__main__":
-    main()
+    game = Game(240, 180)
+    game.start()
