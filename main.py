@@ -98,7 +98,7 @@ class Game:
             Witch(game, 120, 120)
             Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
             BatCompanion(self, self.boo)
-            Key(self, 200, 80)
+            Key(self, 200, 80, 1)
             Door(self, 10, 80)
 
     def clean(self):
@@ -458,7 +458,7 @@ class LeaderboardContent(pygame.sprite.Sprite):
 
 
 class Key(pygame.sprite.Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, keyType):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
         game.uncaptured_key_sprites.add(self)
@@ -475,8 +475,10 @@ class Key(pygame.sprite.Sprite):
             pygame.image.load("assets/keys/3.png"),
         ]
 
+        self.keyType = keyType
+
     def draw(self, frame_count):
-        self.game.screen.blit(self.keys[0], (self.x, self.y))
+        self.game.screen.blit(self.keys[self.keyType], (self.x, self.y))
 
 class Door(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
