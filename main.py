@@ -26,6 +26,7 @@ UP_KEY = pygame.K_UP
 DOWN_KEY = pygame.K_DOWN
 
 pygame.init()
+pygame.display.set_caption("Boo - The Game")
 
 class Game:
     def __init__(self, s_width, s_height):
@@ -113,6 +114,7 @@ class Game:
                     sprite.draw(frame_count)
                 else:
                     sprite.draw()
+
             self.update()
 
         pygame.quit()
@@ -136,7 +138,7 @@ class Kid(pygame.sprite.Sprite):
 
         self.image = pygame.image.load("assets/kid.png")
 
-    def draw(self):
+    def update(self):
         if len(self.points) == 0: return None
 
         last_point = self.points[self.current_target_index-1]
@@ -156,6 +158,7 @@ class Kid(pygame.sprite.Sprite):
             else:
                 self.current_target_index += 1
 
+    def draw(self):
         self.game.screen.blit(self.image, (self.x, self.y))
 
 class Witch(pygame.sprite.Sprite):
@@ -171,20 +174,20 @@ class Witch(pygame.sprite.Sprite):
         self.image = pygame.image.load("assets/witch/up.png")
 
         self.potionDist = 50
+        self.potion_timeout = 10
+        self.last_potion_thrown_at = 0
 
-        self.potion = None
-    
+    def update(self):
+        # Throw potion if close enough
+        if abs(abs(self.x) - abs(self.game.boo.x)) < self.potionDist and abs(abs(self.y) - abs(self.game.boo.y)) < self.potionDist:
+            if time.time() - self.last_potion_thrown_at > self.potion_timeout:
+                Potion(self.game, self)
+                self.last_potion_thrown_at = time.time()
+
     def draw(self):
         self.game.screen.blit(self.image, (self.x, self.y))
 
-        # Throw potion if close enough
-        if abs(abs(self.x) - abs(self.game.boo.x)) < self.potionDist and abs(abs(self.y) - abs(self.game.boo.y)) < self.potionDist:
-            if self.potion == None:
-                self.potion = self.throwPotion()
 
-    def throwPotion(self):
-        return Potion(self.game, self)
-    
 class Potion(pygame.sprite.Sprite):
     def __init__(self, game, witch):
         pygame.sprite.Sprite.__init__(self)
@@ -205,7 +208,6 @@ class Potion(pygame.sprite.Sprite):
 
         self.len = 1
         self.total = 60
-        print("Ooo")
 
 
     def draw(self, frame_count):
@@ -216,10 +218,14 @@ class Potion(pygame.sprite.Sprite):
         # Animate potion
         self.game.screen.blit(self.animation[math.floor(frame_count / 10) % len(self.animation)], (self.x, self.y))
         self.len = self.len + 1
-        
+
         # lerp between witch and boo
         self.x = self.witch.x + (self.game.boo.x - self.witch.x) * (self.len / self.total)
         self.y = self.witch.y + (self.game.boo.y - self.witch.y) * (self.len / self.total)
+
+    def check_touch(self):
+        pass
+
 
 class Barrier(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
