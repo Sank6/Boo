@@ -1,20 +1,18 @@
-{
-  [
-    {
-      "name": "Roan",
-      "time": 30
-    },
-    {
-      "name": "Sankarsh",
-      "time": 33
-    },
-    {
-      "name": "Amica",
-      "time": 300
-    },
-    {
-      "name": "David",
-      "time": 4534587345
-    },
-  ]
-}
+[
+  {
+    "name": "Roan",
+    "time": 30
+  },
+  {
+    "name": "Sankarsh",
+    "time": 33
+  },
+  {
+    "name": "Amica",
+    "time": 300
+  },
+  {
+    "name": "David",
+    "time": 400
+  }
+]

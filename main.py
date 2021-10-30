@@ -1,6 +1,8 @@
 import pygame
 from pygame.locals import *
-import time, math
+import time
+import math
+import json
 
 BUTTON_TEXT_COLOUR = (64, 28, 20)
 ## none button
@@ -43,31 +45,42 @@ class Game:
         self.witch_sprites = pygame.sprite.Group()
         self.potion_sprites = pygame.sprite.Group()
         # Custom Sprites
-        self.backgrounds = [
-            pygame.image.load("assets/title_background_1.png"),
-            pygame.image.load("assets/title_background_2.png"),
-            pygame.image.load("assets/title_background_3.png"),
-        ]
         self.witch = None
         self.boo = None # ✨ The Player ✨
 
         Key(self, 200, 80)
 
-        self.startTitleScreen()
+        self.start_title_screen()
 
     def start(self):
         self.control_loop()
 
-    def startTitleScreen(self):
+    def start_title_screen(self):
+        self.clean()
+        self.backgrounds = [
+            pygame.image.load("assets/title_background_1.png"),
+            pygame.image.load("assets/title_background_2.png"),
+            pygame.image.load("assets/title_background_3.png"),
+        ]
         playButton = Button(self, 65, 90, 110, 25, "NEW GAME", self.play)
-        playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.play)
+        playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.start_leaderboard_screen)
         quitButton = Button(self, 80, 150, 80, 20, "QUIT", self.quit)
+
+    def start_title_screen_callback(self, button, event, game):
+        self.start_title_screen()
+
+    def start_leaderboard_screen(self, button, event, game):
+        self.clean()
+        self.backgrounds = [pygame.image.load("assets/leaderboard_background.png")]
+        Button(self, 4, 155, 60, 20, "BACK", self.start_title_screen_callback)
+        LeaderboardContent(self)
 
     def quit(self, button, event, game):
         self.running = False
 
     def play(self, button, event, game):
         self.clean()
+        self.boo = Boo(self)
         if self.level == 1:
             # Level 1 boo starting position
             self.boo.x = 33
@@ -92,7 +105,7 @@ class Game:
         self.barrier_sprites.empty()
         self.kid_sprites.empty()
         self.witch = None
-        self.boo = Boo(self)
+        self.boo = None
 
     def control_loop(self):
         frame_count = 0
@@ -339,7 +352,7 @@ class Boo(pygame.sprite.Sprite):
             x_delta = 0
         if new_y < 10 or new_y+self.height > 180-10:
             y_delta = 0
-        
+
         # Animate Boo
         if self.frames_left > 0:
             self.frames_left -= 1
@@ -347,7 +360,7 @@ class Boo(pygame.sprite.Sprite):
             self.frames_left = 10
             self.y += 1 if self.up else -1
             self.up = not self.up
-        
+
         self.x += x_delta
         self.y += y_delta
 
@@ -364,8 +377,8 @@ class BatCompanion(pygame.sprite.Sprite):
             pygame.image.load("assets/bat/3.png")
         ]
         self.parent = parent
-        self.width = 16
-        self.height = 16
+        self.width = 10
+        self.height = 8
         self.x = self.parent.x - self.width - 3
         self.y = self.parent.y - self.height - 3
         self.max_displacement = 8
@@ -388,6 +401,35 @@ class BatCompanion(pygame.sprite.Sprite):
         image = self.images[math.floor(frame_count / 10) % len(self.images)]
         self.game.screen.blit(image, (self.x, self.y))
 
+
+class LeaderboardContent(pygame.sprite.Sprite):
+    def __init__(self, game):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        self.game = game
+
+        with open("scores.json") as scores_json:
+            self.leaderboard = json.load(scores_json)
+            self.leaderboard = self.leaderboard[:5]
+        self.number_font = pygame.font.Font("assets/font.ttf", 10)
+
+    def update(self):
+        pass
+
+    def draw(self, frame_count):
+        screen = self.game.screen
+
+        for i, player in enumerate(self.leaderboard):
+            name = player["name"]
+            time = player["time"]
+
+            text = self.number_font.render(f"{time}s - ", True, BUTTON_TEXT_COLOUR)
+            text_rect = text.get_rect(topleft = (30, 55 + 11*i))
+            screen.blit(text, text_rect)
+
+            text = self.number_font.render(name[:12], True, BUTTON_TEXT_COLOUR)
+            text_rect = text.get_rect(topleft = (30 + text_rect.width, 55 + 11*i))
+            screen.blit(text, text_rect)
 
 
 class Key(pygame.sprite.Sprite):
