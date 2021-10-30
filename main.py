@@ -253,9 +253,9 @@ class Potion(pygame.sprite.Sprite):
         self.witch = witch
 
         self.animation = [
-            pygame.image.load("assets/potions/1.png"),
-            pygame.image.load("assets/potions/2.png"),
-            pygame.image.load("assets/potions/3.png"),
+            pygame.image.load("assets/potions/y1.png"),
+            pygame.image.load("assets/potions/y2.png"),
+            pygame.image.load("assets/potions/y3.png"),
         ]
 
         self.len = 1
@@ -269,7 +269,7 @@ class Potion(pygame.sprite.Sprite):
             self.player_dies()
             return
         # Animate potion
-        self.game.screen.blit(self.animation[math.floor(frame_count / 10) % len(self.animation)], (self.x, self.y))
+        self.game.screen.blit(self.animation[math.floor(self.len / 20) % 3], (self.x, self.y))
         self.len = self.len + 1
 
         # lerp between witch and boo
