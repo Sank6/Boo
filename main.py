@@ -132,7 +132,18 @@ class Kid(pygame.sprite.Sprite):
         self.x = points[0][0]
         self.y = points[0][1]
 
-        self.image = pygame.image.load("assets/kid.png")
+        self.images = {
+            "down": pygame.image.load("assets/kid/down.png"),
+            "down_walking": pygame.image.load("assets/kid/down_walking.png"),
+            "left": pygame.image.load("assets/kid/left.png"),
+            "left_walking": pygame.image.load("assets/kid/left_walking.png"),
+            "up": pygame.image.load("assets/kid/up.png"),
+            "up_walking": pygame.image.load("assets/kid/up_walking.png"),
+            "right": pygame.image.load("assets/kid/right.png"),
+            "right_walking": pygame.image.load("assets/kid/right_walking.png"),
+        }
+        self.dir = "down"
+
 
     def update(self):
         if len(self.points) == 0: return None
@@ -141,9 +152,19 @@ class Kid(pygame.sprite.Sprite):
         target_point = self.points[self.current_target_index]
 
         if target_point[0] != last_point[0]:
-            self.x += 0.4 * ((target_point[0]-last_point[0]) / abs(target_point[0]-last_point[0]))
+            dir = ((target_point[0]-last_point[0]) / abs(target_point[0]-last_point[0]))
+            self.x += 0.4 * dir
+            if dir < 0:
+                self.dir = "left"
+            else:
+                self.dir = "right"
         if target_point[1] != last_point[1]:
-            self.y += 0.4 * ((target_point[1]-last_point[1]) / abs(target_point[1]-last_point[1]))
+            dir = ((target_point[1]-last_point[1]) / abs(target_point[1]-last_point[1]))
+            self.y += 0.4 * dir
+            if dir < 0:
+                self.dir = "up"
+            else:
+                self.dir = "down"
 
         if (self.x-0.2 <= target_point[0] <= self.x+0.2
         and self.y-0.2 <= target_point[1] <= self.y+0.2):
@@ -155,7 +176,8 @@ class Kid(pygame.sprite.Sprite):
                 self.current_target_index += 1
 
     def draw(self, frame_count):
-        self.game.screen.blit(self.image, (self.x, self.y))
+        image = self.images[self.dir]
+        self.game.screen.blit(image, (self.x, self.y))
 
 class Witch(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -174,7 +196,7 @@ class Witch(pygame.sprite.Sprite):
             pygame.image.load("assets/witch/left.png"),
         ]
 
-        self.potionDist = 50
+        self.potionDist = 16*2
         self.potion_timeout = 10
         self.last_potion_thrown_at = 0
         self.direction_index = 0
