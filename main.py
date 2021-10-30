@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-import time
+import time, math
 
 BUTTON_TEXT_COLOUR = (64, 28, 20)
 ## none button
@@ -40,7 +40,11 @@ class Game:
         self.barrier_sprites = pygame.sprite.Group()
         self.kid_sprites = pygame.sprite.Group()
         # Custom Sprites
-        self.background = pygame.image.load("assets/title_background.png")
+        self.backgrounds = [
+            pygame.image.load("assets/title_background_1.png"),
+            pygame.image.load("assets/title_background_2.png"),
+            pygame.image.load("assets/title_background_3.png"),
+        ]
         self.witch = None
         self.boo = None # ✨ The Player ✨
 
@@ -64,14 +68,14 @@ class Game:
             self.boo.x = 30
             self.boo.y = 30
             self.boo.draw()
-            self.background = pygame.image.load("assets/level1_background.png")
+            self.backgrounds = [pygame.image.load("assets/level1_background.png")]
 
             # Level 1 barriers
-            # barriers = [
-            #     Barrier(self, 16, 16),
-            #     Barrier(self, 16, 32),
-            #     Barrier(self, 16, 64),
-            # ]
+            barriers = [
+                Barrier(self, 16, 16),
+                Barrier(self, 16, 32),
+                Barrier(self, 16, 64),
+            ]
 
     def clean(self):
         self.all_sprites.empty()
@@ -81,8 +85,10 @@ class Game:
         self.boo = Boo(self)
     
     def control_loop(self):
+        frame_count = 0
         while self.running:
-            self.screen.blit(self.background, (0, 0))
+            frame_count = (frame_count + 1) % 60
+            self.screen.blit(self.backgrounds[math.floor(frame_count / 10) % len(self.backgrounds)], (0, 0))
 
             self.all_sprites.update()
             
@@ -150,6 +156,8 @@ class Barrier(pygame.sprite.Sprite):
         self.game = game
         self.x = x
         self.y = y
+        self.width = 16
+        self.height = 16
         self.image = pygame.image.load("assets/barrier.png")
     
     def draw(self):
