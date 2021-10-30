@@ -39,6 +39,8 @@ class Game:
 
         self.barrier_sprites = pygame.sprite.Group()
         self.kid_sprites = pygame.sprite.Group()
+        self.witch_sprites = pygame.sprite.Group()
+        self.potion_sprites = pygame.sprite.Group()
         # Custom Sprites
         self.backgrounds = [
             pygame.image.load("assets/title_background_1.png"),
@@ -77,7 +79,8 @@ class Game:
                 Barrier(self, 8, 38),
             ]
 
-            Kid(self, [(160, 8), (160, 168)])
+            #Kid(self, [(160, 8), (160, 168)])
+            Witch(game, 120, 120)
 
     def clean(self):
         self.all_sprites.empty()
@@ -104,7 +107,10 @@ class Game:
             for sprite in self.all_sprites:
                 if isinstance(sprite, Button):
                     sprite.check_state(event)
-                sprite.draw()
+                if isinstance(sprite, Potion):
+                    sprite.draw(frame_count)
+                else:
+                    sprite.draw()
             self.update()
 
         pygame.quit()
@@ -146,6 +152,69 @@ class Kid(pygame.sprite.Sprite):
             self.previousPointIndex += 1
 
         self.game.screen.blit(self.image, (self.x, self.y))
+
+class Witch(pygame.sprite.Sprite):
+    def __init__(self, game, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        game.witch_sprites.add(self)
+
+        self.game = game
+
+        self.x = x
+        self.y = y # Witch is 1x2 so the y coordinate is the top one.
+        self.image = pygame.image.load("assets/witch/up.png")
+
+        self.potionDist = 50
+
+        self.potion = None
+    
+    def draw(self):
+        self.game.screen.blit(self.image, (self.x, self.y))
+
+        # Throw potion if close enough
+        if abs(abs(self.x) - abs(self.game.boo.x)) < self.potionDist and abs(abs(self.y) - abs(self.game.boo.y)) < self.potionDist:
+            if self.potion == None:
+                self.potion = self.throwPotion()
+
+    def throwPotion(self):
+        return Potion(self.game, self)
+    
+class Potion(pygame.sprite.Sprite):
+    def __init__(self, game, witch):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        game.potion_sprites.add(self)
+
+        self.x = witch.x
+        self.y = witch.y
+
+        self.game = game
+        self.witch = witch
+
+        self.animation = [
+            pygame.image.load("assets/potions/1.png"),
+            pygame.image.load("assets/potions/2.png"),
+            pygame.image.load("assets/potions/3.png"),
+        ]
+
+        self.len = 1
+        self.total = 60
+        print("Ooo")
+
+
+    def draw(self, frame_count):
+        if self.len > self.total:
+            self.game.potion_sprites.remove(self)
+            self.game.all_sprites.remove(self)
+            return
+        # Animate potion
+        self.game.screen.blit(self.animation[math.floor(frame_count / 10) % len(self.animation)], (self.x, self.y))
+        self.len = self.len + 1
+        
+        # lerp between witch and boo
+        self.x = self.witch.x + (self.game.boo.x - self.witch.x) * (self.len / self.total)
+        self.y = self.witch.y + (self.game.boo.y - self.witch.y) * (self.len / self.total)
 
 class Barrier(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
