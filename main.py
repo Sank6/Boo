@@ -77,7 +77,8 @@ class Game:
                 Barrier(self, 8, 38),
             ]
 
-            Kid(self, [(160, 8), (160, 168)])
+            Kid(self, [(160, 8), (160, 8+16*4), (160-16*4, 8+16*4)])
+            # Kid(self, [(160, 168), (160, 8)])
 
     def clean(self):
         self.all_sprites.empty()
@@ -113,7 +114,6 @@ class Game:
         pygame.display.flip()
         self.clock.tick(60)
 
-
 class Kid(pygame.sprite.Sprite):
     def __init__(self, game, points):
         pygame.sprite.Sprite.__init__(self)
@@ -122,7 +122,7 @@ class Kid(pygame.sprite.Sprite):
 
         self.game = game
         self.points = points
-        self.currentTargetIndex = 0
+        self.current_target_index = 1
 
         self.x = points[0][0]
         self.y = points[0][1]
@@ -130,20 +130,24 @@ class Kid(pygame.sprite.Sprite):
         self.image = pygame.image.load("assets/kid.png")
 
     def draw(self):
-        lastPoint = self.points[self.previousPointIndex+1]
-        nextPoint = self.points[self.previousPointIndex+1]
+        if len(self.points) == 0: return None
 
-        if nextPoint[0] < self.x:
-            self.x -= 1
-        elif nextPoint[0] > self.x:
-            self.x += 1
-        if nextPoint[1] < self.y:
-            self.y -= 1
-        elif nextPoint[1] > self.y:
-            self.y += 1
+        last_point = self.points[self.current_target_index-1]
+        target_point = self.points[self.current_target_index]
 
-        if self.x == nextPoint[0] and self.y == nextPoint[1]:
-            self.previousPointIndex += 1
+        if target_point[0] != last_point[0]:
+            self.x += 0.4 * ((target_point[0]-last_point[0]) / abs(target_point[0]-last_point[0]))
+        if target_point[1] != last_point[1]:
+            self.y += 0.4 * ((target_point[1]-last_point[1]) / abs(target_point[1]-last_point[1]))
+
+        if (self.x-0.2 <= target_point[0] <= self.x+0.2
+        and self.y-0.2 <= target_point[1] <= self.y+0.2):
+            self.x, self.y = target_point
+            if self.current_target_index+1 == len(self.points):
+                self.current_target_index = 1
+                self.points.reverse()
+            else:
+                self.current_target_index += 1
 
         self.game.screen.blit(self.image, (self.x, self.y))
 
