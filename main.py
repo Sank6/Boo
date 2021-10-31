@@ -508,6 +508,8 @@ class Boo(pygame.sprite.Sprite):
         self.stun_timer = 0
         self.stun_timeout = 2
 
+        self.flash_frames = 40
+
         self.images = {
             "left": pygame.image.load("assets/boo/left.png"),
             "right": pygame.image.load("assets/boo/right.png"),
@@ -522,13 +524,20 @@ class Boo(pygame.sprite.Sprite):
         }
 
     def draw(self, frame_count):
-        if self.affected_by_potion != False and time.time() - self.affected_by_potion < 2:
+        self.flash_frames -= 1
+        if self.affected_by_potion != False and time.time() - self.affected_by_potion < 2 and self.flash_frames > 20:
             boo = self.images_inverted[self.moving]
+            self.game.screen.blit(boo, (self.x, self.y))
+        elif self.affected_by_potion != False and time.time() - self.affected_by_potion < 2:
+            boo = self.images[self.moving]
             self.game.screen.blit(boo, (self.x, self.y))
         else:
             self.affected_by_potion = False
             boo = self.images[self.moving]
             self.game.screen.blit(boo, (self.x, self.y))
+        
+        if self.flash_frames <= 0:
+            self.flash_frames = 40
     
     def concat(self, a, b, c):
         yield from a
