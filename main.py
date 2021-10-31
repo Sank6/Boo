@@ -101,10 +101,19 @@ class Game:
         x,y,k=0,0,0
         kid_coords = {}
         for line in lines:
+            last_was_barrier = False
             for char in line:
                 if char == "#":
-                    Barrier(self, 16*x+8, 16*y+10)
-                elif char == "K":
+                    if last_was_barrier != False and random.randint(0,5) == 1:
+                        self.all_sprites.remove(last_was_barrier)
+                        self.barrier_sprites.remove(last_was_barrier)
+                        last_was_barrier = False
+                        Barrier(self, 16*(x-1)+8, 16*y+10, log=True)
+                    else:
+                        last_was_barrier = Barrier(self, 16*x+8, 16*y+10)
+                else:
+                    last_was_barrier = False
+                if char == "K":
                     Key(self, 16*x+8, 16*y-6, k)
                     k += 1
                 elif char == "D":
@@ -388,7 +397,7 @@ class Potion(pygame.sprite.Sprite):
 
 
 class Barrier(pygame.sprite.Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, log = False):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
         game.barrier_sprites.add(self)
@@ -396,9 +405,9 @@ class Barrier(pygame.sprite.Sprite):
         self.game = game
         self.x = x+1
         self.y = y+1
-        self.width = 14
+        self.width = 14 if not log else 30
         self.height = 14
-        self.image = pygame.image.load("assets/barrier.png")
+        self.image = pygame.image.load("assets/barrier.png") if not log else pygame.image.load("assets/log.png")
 
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
