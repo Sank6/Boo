@@ -89,6 +89,7 @@ class Game:
             pygame.image.load("assets/title_background/2.png"),
             pygame.image.load("assets/title_background/3.png"),
         ]
+        self.level = 1
         playButton = Button(self, 65, 90, 110, 25, "NEW GAME", self.intro_cut_screen)
         playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.start_leaderboard_screen)
         quitButton = Button(self, 37.5, 150, 80, 20, "QUIT", self.quit)
@@ -702,18 +703,18 @@ class Boo(pygame.sprite.Sprite):
                     self.game.uncaptured_key_sprites.remove(barrier)
                     self.keys.append(barrier)
                 else:
-                    #
-                    # if not in_x_axis(self.x) and in_y_axis(new_y):
-                    #     x_delta = 0
-                    # if (in_x_axis(new_x) and not in_y_axis(new_y-1)):
-                    #     y_delta = 0
-                    # if (in_x_axis(new_x) and not in_y_axis(new_y+1)):
-                    #     y_delta = 0
-                    #
-                    # new_x = self.x + x_delta
-                    # new_y = self.y + y_delta
-                    x_delta = 0
-                    y_delta = 0
+
+                    if new_x+self.width-2 <= barrier.x <= new_x+self.width and in_y_axis(self.y):
+                        x_delta = 0
+                    if new_x <= barrier.x + barrier.width <= new_x+2 and in_y_axis(self.y):
+                        x_delta = 0
+                    if new_y+self.height-2 <= barrier.y <= new_y+self.height and in_x_axis(self.x):
+                        y_delta = 0
+                    if new_y <= barrier.y + barrier.height <= new_y+2 and in_x_axis(self.x):
+                        y_delta = 0
+
+                    new_x = self.x + x_delta
+                    new_y = self.y + y_delta
 
         # Check that boo doesn't escape his container
         if new_x < 8 or new_x+self.width > 240-8:
