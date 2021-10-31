@@ -47,6 +47,7 @@ class Game:
         self.uncaptured_key_sprites = pygame.sprite.Group()
         self.captured_key_sprites = pygame.sprite.Group()
         self.props_sprites = pygame.sprite.Group()
+        self.blackout_sprites = pygame.sprite.Group()
 
         # Custom Sprites
         self.witch = None
@@ -59,10 +60,10 @@ class Game:
         self.player_name = ""
 
         self.keybinds = {
-            "LEFT_KEY": pygame.K_LEFT,
-            "RIGHT_KEY": pygame.K_RIGHT,
-            "UP_KEY": pygame.K_UP,
-            "DOWN_KEY": pygame.K_DOWN,
+            "LEFT_KEY": pygame.K_a,
+            "RIGHT_KEY": pygame.K_d,
+            "UP_KEY": pygame.K_w,
+            "DOWN_KEY": pygame.K_s,
         }
 
         self.start_title_screen()
@@ -105,8 +106,7 @@ class Game:
 
         for i in range(0, 20):
             prop = random.choice(["rock", "rocks", "mushroom", "weed"])
-            Prop(self, random.randint(0, self.screen.get_width()), random.randint(0, self.screen.get_height()), prop)
-
+            Prop(self, random.randint(8, self.screen.get_width() - 16), random.randint(10, self.screen.get_height() - 20), prop)
 
         ##load game programatically
         lines = []
@@ -251,6 +251,9 @@ class Game:
 
             if self.boo != None:
                 self.boo.draw(frame_count)
+
+            for blackout in self.blackout_sprites:
+                blackout.draw(frame_count)
                 
             self.update()
 
@@ -401,9 +404,11 @@ class Potion(pygame.sprite.Sprite):
             self.animation.append(pygame.image.load("assets/potions/" + self.picked_colour + str(i) + ".png"))
 
         self.potion_effects = [
-            "speed up",
-            "slow down",
-            "stun"
+            "Speed Up",
+            "Slow Down",
+            "Stun",
+            "Reverse Controls",
+            "Blackout"
         ]
 
         self.len = 1
@@ -437,7 +442,31 @@ class Potion(pygame.sprite.Sprite):
         elif potion_effect == 2:
             self.game.boo.stunned = True
             self.game.boo.stun_timer = time.time()
+        elif potion_effect == 3:
+            kb = self.game.keybinds.copy()
+            self.game.keybinds["LEFT_KEY"] = kb["RIGHT_KEY"]
+            self.game.keybinds["RIGHT_KEY"] = kb["LEFT_KEY"]
+            self.game.keybinds["UP_KEY"] = kb["DOWN_KEY"]
+            self.game.keybinds["DOWN_KEY"] = kb["UP_KEY"]
+        elif potion_effect == 4:
+            Blackout(game=self.game)
 
+class Blackout(pygame.sprite.Sprite):
+    def __init__(self, game):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        game.blackout_sprites.add(self)
+
+        self.game = game
+        self.start_time = time.time()
+
+    def draw(self, frame_count):
+        self.game.screen.fill((0, 0, 0))
+
+    def update(self):
+        if time.time() - self.start_time > 3:
+            self.game.blackout_sprites.remove(self)
+            self.game.all_sprites.remove(self)
 
 class Barrier(pygame.sprite.Sprite):
     def __init__(self, game, x, y, log = False):
