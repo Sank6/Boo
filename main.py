@@ -164,7 +164,7 @@ class Game:
                     "time": self.time_taken_in_game
                 })
         with open("scores.json", "w") as scores_json:
-            json.dump(scores_json, leaderboard)
+            json.dump(leaderboard, scores_json, indent=3)
 
         self.start_title_screen()
 
@@ -345,7 +345,7 @@ class Potion(pygame.sprite.Sprite):
         self.picked_colour = self.potion_colours[random.randint(0, len(self.potion_colours)-1)]
 
         self.animation = []
-        
+
         for i in range(1, 3):
             self.animation.append(pygame.image.load("assets/potions/" + self.picked_colour + str(i) + ".png"))
 
@@ -472,7 +472,7 @@ class Boo(pygame.sprite.Sprite):
                     x_delta = 0
                     y_delta = 0
                 elif isinstance(barrier, Kid):
-                    self.game.game_completed()
+                    self.game.restart_level()
                 elif isinstance(barrier, Key):
                     self.game.captured_key_sprites.add(barrier)
                     self.game.all_sprites.remove(barrier)
