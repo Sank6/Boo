@@ -301,7 +301,7 @@ class Kid(pygame.sprite.Sprite):
 
         self.x = self.draw_x
         self.y = self.draw_y + 12
-        
+
     def draw(self, frame_count):
         image = self.images[self.dir]
         if self.dir == "left" or self.dir == "right":
@@ -618,12 +618,14 @@ class Door(pygame.sprite.Sprite):
         self.door = True
 
         self.image = pygame.image.load("assets/door.png")
+        self.under = pygame.image.load("assets/under_door.png")
 
     def update(self):
         pass
 
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
+        self.game.screen.blit(self.under, (self.x, self.y + self.height))
 
 
 class Button(pygame.sprite.Sprite):
