@@ -33,7 +33,7 @@ class Game:
     def __init__(self, s_width, s_height):
         self.screen = pygame.display.set_mode((s_width, s_height), flags=pygame.SCALED)
         self.level = 1
-        self.levels = len(os.listdir("levels/")) + 1
+        self.levels = len(os.listdir("levels/"))
         self.paused = False
         self.running = True
         self.clock = pygame.time.Clock()
@@ -48,6 +48,7 @@ class Game:
         self.captured_key_sprites = pygame.sprite.Group()
         self.props_sprites = pygame.sprite.Group()
         self.blackout_sprites = pygame.sprite.Group()
+        self.debuff_sprites = pygame.sprite.Group()
 
         # Custom Sprites
         self.witch = None
@@ -66,7 +67,11 @@ class Game:
             "DOWN_KEY": pygame.K_s,
         }
 
+        self.default_keybinds = self.keybinds.copy()
+
         self.start_title_screen()
+
+        self.keybinds_reversed = False
         
         pygame.mixer.music.load("assets/title_screen_music.mp3")
         pygame.mixer.music.play(-1)
@@ -86,7 +91,7 @@ class Game:
         quitButton = Button(self, 80, 150, 80, 20, "QUIT", self.quit)
 
     def start_title_screen_callback(self, button, event, game):
-        pygame.mixer.music.fadeout(1000)
+        pygame.mixer.music.fadeout(500)
         pygame.mixer.music.load("assets/title_screen_music.mp3")
         pygame.mixer.music.play(-1)
         self.start_title_screen()
@@ -102,16 +107,24 @@ class Game:
 
     def start_game(self, button, event, game):
         self.time_taken_in_game = 0
-        pygame.mixer.music.fadeout(1000)
+        pygame.mixer.music.fadeout(500)
         pygame.mixer.music.load("assets/audio.mp3")
         pygame.mixer.music.play(-1)
         self.play(button, event, game)
+
+    def reverse_keybinds(self):
+        kb = self.keybinds.copy()
+        self.keybinds["LEFT_KEY"] = kb["RIGHT_KEY"]
+        self.keybinds["RIGHT_KEY"] = kb["LEFT_KEY"]
+        self.keybinds["UP_KEY"] = kb["DOWN_KEY"]
+        self.keybinds["DOWN_KEY"] = kb["UP_KEY"]
+        self.keybinds_reversed = time.time()
 
     def play(self, button, event, game):
         self.clean()
         self.level_start_time = time.time()
         self.boo = Boo(self)
-        self.backgrounds = [pygame.image.load(f"assets/level1_background.png")]
+        self.backgrounds = [pygame.image.load(f"assets/level_backgrounds/{self.level}.png")]
 
         for i in range(0, 20):
             prop = random.choice(["rock", "rocks", "mushroom", "weed"])
@@ -124,8 +137,6 @@ class Game:
         x,y,k=0,0,0
         kid_coords = {}
         for line in lines:
-            if line == "BOSS FIGHT":
-                break
             last_was_barrier = False
             for char in line:
                 if char == "#":
@@ -170,15 +181,6 @@ class Game:
         self.time_box = TextBox(self, 208, 3, 6, "Loading")
         self.key_box = TextBox(self, 20, 1, 6, "0", colour=BUTTON_MAIN)
         BatCompanion(self, self.boo)
-
-        if self.level == 5:
-            self.boss_fight()
-
-    def boss_fight(self):
-        self.backgrounds = [pygame.image.load(f"assets/brick_background.png")]
-        self.boo.x = 70
-        self.boo.y = 100
-        Imran(self, 96, 26)
 
     def restart_level(self):
         self.time_taken_in_game += time.time() - self.level_start_time
@@ -262,6 +264,8 @@ class Game:
 
         self.game_over_ = False
 
+        self.keybinds = self.default_keybinds.copy()
+
     def control_loop(self):
         frame_count = 0
         while self.running:
@@ -295,6 +299,17 @@ class Game:
                 blackout.draw(frame_count)
 
             self.update()
+
+            if self.keybinds_reversed != False:
+                if time.time() - self.keybinds_reversed > 10:
+                    self.keybinds_reversed = False
+                    self.keybinds = self.default_keybinds.copy()
+                    
+                    if self.boo:
+                        for debuff in self.boo.debuffs:
+                            if debuff.prop == "reversed":
+                                debuff.delete_sprite()
+                        
 
             if (self.time_box):
                 self.time_box.text = str(int(self.total_time - self.time_taken_in_game))
@@ -477,19 +492,27 @@ class Potion(pygame.sprite.Sprite):
         self.game.boo.affected_by_potion = time.time()
         if potion_effect == 0:
             self.game.boo.speed = 1.5
+            self.game.boo.new_debuff = True
+            debuff = Debuff(self.game, len(self.game.boo.debuffs), "speed")
+            self.game.boo.debuffs.append(debuff)
         elif potion_effect == 1:
             self.game.boo.speed = 0.25
+            self.game.boo.new_debuff = True
+            debuff = Debuff(self.game, len(self.game.boo.debuffs), "slowed")
+            self.game.boo.debuffs.append(debuff)
         elif potion_effect == 2:
             self.game.boo.stunned = True
             self.game.boo.stun_timer = time.time()
+            debuff = Debuff(self.game, len(self.game.boo.debuffs), "stunned")
+            self.game.boo.debuffs.append(debuff)
         elif potion_effect == 3:
-            kb = self.game.keybinds.copy()
-            self.game.keybinds["LEFT_KEY"] = kb["RIGHT_KEY"]
-            self.game.keybinds["RIGHT_KEY"] = kb["LEFT_KEY"]
-            self.game.keybinds["UP_KEY"] = kb["DOWN_KEY"]
-            self.game.keybinds["DOWN_KEY"] = kb["UP_KEY"]
+            self.game.reverse_keybinds()
+            debuff = Debuff(self.game, len(self.game.boo.debuffs), "reversed")
+            self.game.boo.debuffs.append(debuff)
         elif potion_effect == 4:
             Blackout(game=self.game)
+            debuff = Debuff(self.game, len(self.game.boo.debuffs), "blackout")
+            self.game.boo.debuffs.append(debuff)
 
 class Blackout(pygame.sprite.Sprite):
     def __init__(self, game):
@@ -511,6 +534,11 @@ class Blackout(pygame.sprite.Sprite):
         if time.time() - self.start_time > 3:
             self.game.blackout_sprites.remove(self)
             self.game.all_sprites.remove(self)
+            
+            if self.game.boo:
+                for debuff in self.game.boo.debuffs:
+                    if debuff.prop == "blackout":
+                        debuff.delete_sprite()
 
 class Barrier(pygame.sprite.Sprite):
     def __init__(self, game, x, y, log = False, tree = False):
@@ -559,6 +587,11 @@ class Boo(pygame.sprite.Sprite):
         self.stunned = False
         self.stun_timer = 0
         self.stun_timeout = 2
+        self.debuffs = [] # "stunned", "slowed", "reversed", "speed", "blackout"
+
+        self.debuff_timer = 0
+        self.debuff_timeout = 10
+        self.new_debuff = False
 
         self.flash_frames = 40
 
@@ -656,9 +689,20 @@ class Boo(pygame.sprite.Sprite):
         if new_y < 10 or new_y+self.height > 180-10:
             y_delta = 0
 
-
+        if self.new_debuff:
+            self.debuff_timer += 1/60
+            if self.debuff_timer >= self.debuff_timeout:
+                self.debuff_timer = 0
+                self.new_debuff = False
+                for debuff in self.debuffs:
+                    if debuff.prop == "slowed" or debuff.prop == "speed":
+                        debuff.delete_sprite()
+                self.speed = 1
         if self.stunned:
             if time.time() - self.stun_timer > self.stun_timeout:
+                for debuff in self.debuffs:
+                    if debuff.prop == "stunned":
+                        debuff.delete_sprite()
                 self.stunned = False
             else:
                 return
@@ -949,49 +993,36 @@ class Prop(pygame.sprite.Sprite):
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
 
-class Imran(pygame.sprite.Sprite):
-    def __init__(self, game, x, y):
+class Debuff(pygame.sprite.Sprite):
+    def __init__(self, game, index, prop):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
+        game.debuff_sprites.add(self)
+
+        self.index = index
 
         self.game = game
+        self.x = 35 + 8 * self.index
+        self.y = 1
+        self.prop = prop
 
-        self.startx = x
-        self.starty = y
-
-        self.x = x
-        self.y = y
-        
-        self.len = 1
-        self.total = 60
-        self.width = 32
-        self.height = 32
-        self.image = pygame.image.load("assets/imran.png")
-
-        self.chase_timeout = 60 * 3
-        self.chasing = False
+        self.image = pygame.image.load(f"assets/debuffs/{self.prop}.png")
 
     def draw(self, frame_count):
-        self.chase_timeout -= 1
-        if self.chase_timeout <= 0:
-            self.chase_timeout = 60 * 3
-            self.chasing = True
+        if self.game.boo and self in self.game.boo.debuffs:
+            self.index = self.game.boo.debuffs.index(self)
+        elif self.game.boo:
+            print(self.game.boo.debuffs)
+        self.x = 35 + 8 * self.index
         self.game.screen.blit(self.image, (self.x, self.y))
-    
-    def chase(self):
-        if self.chasing:
-            self.len = self.len + 1
-            # lerp between witch and boo
-            self.x = self.startx + (self.game.boo.x - self.startx) * (self.len / self.total)
-            self.y = self.starty + (self.game.boo.y - self.starty) * (self.len / self.total)
 
-            if self.len > self.total:
-                self.chasing = False
-                self.chase_timeout = 60 * 3
-                self.len = 0
-                self.startx = self.x
-                self.starty = self.y
-     
+    def delete_sprite(self):
+        if self.game.boo and self in self.game.boo.debuffs:
+            self.game.boo.debuffs.remove(self)
+        self.game.debuff_sprites.remove(self)
+        self.game.all_sprites.remove(self)
+        self.kill()
+
 if __name__ == "__main__":
     game = Game(240, 180)
     game.start()
