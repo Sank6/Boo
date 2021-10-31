@@ -128,7 +128,7 @@ class Game:
                 else:
                     last_was_barrier = False
                 if char == "K":
-                    Key(self, 16*x+8, 16*y-6, k)
+                    Key(self, 16*x+8, 16*y+10, k)
                     k += 1
                 elif char == "D":
                     Door(self, 16*x+8, 16*y+10)
