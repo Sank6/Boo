@@ -49,6 +49,7 @@ class Game:
         self.boo = None # ✨ The Player ✨
         self.level_start_time = time.time()
         self.time_taken_in_game = 0
+        self.total_time = 300
         self.time_box = None
         self.player_name = ""
 
@@ -136,6 +137,7 @@ class Game:
         for key in kid_coords:
             Kid(self, kid_coords[key])
 
+        self.time_box = TextBox(self, 208, 3, 6, "Loading")
         BatCompanion(self, self.boo)
 
     def restart_level(self):
@@ -222,10 +224,8 @@ class Game:
 
             self.update()
 
-            # Update timer
-            self.all_sprites.remove(self.time_box)
-            self.time_box = TextBox(self, 208, 3, str(int(self.time_taken_in_game)))
-
+            if (self.time_box):
+                self.time_box.text = str(int(self.total_time - self.time_taken_in_game))
             self.time_taken_in_game += 1/60
 
         pygame.quit()
@@ -758,7 +758,7 @@ class TextInput(pygame.sprite.Sprite):
                 self.text += event.unicode
 
 class TextBox(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, text):
+    def __init__(self, game, x, y, font_size, text):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
 
@@ -769,7 +769,7 @@ class TextBox(pygame.sprite.Sprite):
         self.width = 50
         self.text = text
 
-        self.font = pygame.font.Font("assets/font.ttf", 6)
+        self.font = pygame.font.Font("assets/font.ttf", font_size)
 
     def draw(self, frame_count):
         text = self.font.render(self.text, True, BUTTON_TEXT_COLOUR)
