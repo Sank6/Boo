@@ -49,6 +49,7 @@ class Game:
         self.boo = None # ✨ The Player ✨
         self.level_start_time = time.time()
         self.time_taken_in_game = 0
+        self.player_name = ""
 
         self.keybinds = {
             "LEFT_KEY": pygame.K_LEFT,
@@ -73,6 +74,8 @@ class Game:
         playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.start_leaderboard_screen)
         quitButton = Button(self, 80, 150, 80, 20, "QUIT", self.quit)
 
+        TextInput(self, 0, 0, 100, 25, "", self.play)
+
     def start_title_screen_callback(self, button, event, game):
         self.start_title_screen()
 
@@ -90,7 +93,6 @@ class Game:
         self.level_start_time = time.time()
         self.boo = Boo(self)
         self.backgrounds = [pygame.image.load(f"assets/level1_background.png")]
-
 
         ##load game programatically
         lines = []
@@ -152,6 +154,17 @@ class Game:
 
     def game_completed(self):
         self.clean()
+
+        with open("scores.json") as scores_json:
+            leaderboard = json.load(scores_json)
+        for i in len(leaderboard):
+            if self.time_taken_in_game < p[i]["time"]:
+                p.insert(i, {
+                    "name": self.player_name,
+                    "time": self.time_taken_in_game
+                })
+
+
         self.start_title_screen()
 
 
@@ -192,9 +205,11 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                for sprite in self.all_sprites:
+                    if isinstance(sprite, (Button, TextInput)):
+                        sprite.check_state(event)
+
             for sprite in self.all_sprites:
-                if isinstance(sprite, Button):
-                    sprite.check_state(event)
                 sprite.draw(frame_count)
 
             self.update()
@@ -373,7 +388,7 @@ class Potion(pygame.sprite.Sprite):
             self.game.boo.speed = 0.25
         elif potion_effect == 2:
             pass
-            
+
 
 class Barrier(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -664,6 +679,65 @@ class Button(pygame.sprite.Sprite):
 
     def click(self, event):
         self.callback(self, event, self.game)
+
+
+class TextInput(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, width, height, text, callback):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+
+        self.game = game
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text = text
+        self.callback = callback
+        self.font = pygame.font.Font("assets/font.ttf", height-14)
+
+        self.state = "none" # "none", "active"
+
+    def draw(self, frame_count):
+        screen = self.game.screen
+        if self.state == "none":
+            pygame.draw.rect(screen, BUTTON_OUTLINE_0, [self.x,self.y+1,self.width,self.height-2])
+            pygame.draw.rect(screen, BUTTON_OUTLINE_0, [self.x+1,self.y, self.width-2,self.height])
+            pygame.draw.rect(screen, BUTTON_OUTLINE_1, [self.x+1,self.y+1, self.width-2,self.height-2])
+            pygame.draw.rect(screen, BUTTON_OUTLINE_2, [self.x+2,self.y+2,self.width-4,self.height-4])
+            pygame.draw.rect(screen, BUTTON_OUTLINE_3, [self.x+3,self.y+3,self.width-6,self.height-6])
+
+            pygame.draw.rect(screen, BUTTON_MAIN, [self.x+4,self.y+4,self.width-8,self.height-8])
+
+            pygame.draw.rect(screen, BUTTON_OUTLINE_SHADOW, [self.x+3,self.y+self.height-3,self.width-4,2])
+            pygame.draw.rect(screen, BUTTON_OUTLINE_SHADOW, [self.x+self.width-3,self.y+4,2,self.height-5])
+
+        elif self.state == "active":
+            pygame.draw.rect(screen, BUTTON_PRESSED_OUTLINE_0, [self.x+1,self.y+2,self.width-2,self.height-4])
+            pygame.draw.rect(screen, BUTTON_PRESSED_OUTLINE_0, [self.x+2,self.y+1, self.width-4,self.height-2])
+            pygame.draw.rect(screen, BUTTON_PRESSED_OUTLINE_1, [self.x+2,self.y+2, self.width-4,self.height-4])
+
+            pygame.draw.rect(screen, BUTTON_PRESSED_MAIN, [self.x+3,self.y+3,self.width-6,self.height-6])
+
+        text = self.font.render(self.text, True, BUTTON_TEXT_COLOUR)
+        text_rect = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
+        screen.blit(text, (self.x + 6, self.y + 6))
+
+    def check_state(self, event):
+        mouse = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.x <= mouse[0] <= self.x+self.width and self.y <= mouse[1] <= self.y+self.height:
+                self.state = "active"
+            else:
+                self.state = "none"
+
+        if event.type == pygame.KEYDOWN and self.state == "active":
+            if event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
+            elif event.key == pygame.K_RETURN:
+                self.callback(self.text)
+                self.state = "none"
+            else:
+                self.text += event.unicode
 
 
 
