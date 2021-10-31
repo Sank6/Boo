@@ -106,7 +106,7 @@ class Game:
 
         for i in range(0, 20):
             prop = random.choice(["rock", "rocks", "mushroom", "weed"])
-            Prop(self, random.randint(8, self.screen.get_width() - 16), random.randint(10, self.screen.get_height() - 20), prop)
+            Prop(self, random.randint(8, 208), random.randint(10, 150), prop)
 
         ##load game programatically
         lines = []
@@ -115,6 +115,8 @@ class Game:
         x,y,k=0,0,0
         kid_coords = {}
         for line in lines:
+            if line == "BOSS FIGHT":
+                break
             last_was_barrier = False
             for char in line:
                 if char == "#":
@@ -157,6 +159,15 @@ class Game:
         self.time_box = TextBox(self, 208, 3, 6, "Loading")
         self.key_box = TextBox(self, 20, 1, 6, "0", colour=BUTTON_MAIN)
         BatCompanion(self, self.boo)
+
+        if self.level == 5:
+            self.boss_fight()
+
+    def boss_fight(self):
+        self.backgrounds = [pygame.image.load(f"assets/brick_background.png")]
+        self.boo.x = 70
+        self.boo.y = 100
+        Imran(self, 96, 26)
 
     def restart_level(self):
         self.time_taken_in_game += time.time() - self.level_start_time
@@ -462,7 +473,11 @@ class Blackout(pygame.sprite.Sprite):
         self.start_time = time.time()
 
     def draw(self, frame_count):
-        pygame.draw.circle(self.game.screen, (0,0,0), (self.game.boo.x+8, self.game.boo.y+8), 24+240, 240)
+        if self.game.boo:
+            pygame.draw.circle(self.game.screen, (0,0,0), (self.game.boo.x+8, self.game.boo.y+8), 24+240, 240)
+        else:
+            self.game.blackout_sprites.remove(self)
+            self.game.all_sprites.remove(self)
 
     def update(self):
         if time.time() - self.start_time > 3:
@@ -887,6 +902,49 @@ class Prop(pygame.sprite.Sprite):
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
 
+class Imran(pygame.sprite.Sprite):
+    def __init__(self, game, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+
+        self.game = game
+
+        self.startx = x
+        self.starty = y
+
+        self.x = x
+        self.y = y
+        
+        self.len = 1
+        self.total = 60
+        self.width = 32
+        self.height = 32
+        self.image = pygame.image.load("assets/imran.png")
+
+        self.chase_timeout = 60 * 3
+        self.chasing = False
+
+    def draw(self, frame_count):
+        self.chase_timeout -= 1
+        if self.chase_timeout <= 0:
+            self.chase_timeout = 60 * 3
+            self.chasing = True
+        self.game.screen.blit(self.image, (self.x, self.y))
+    
+    def chase(self):
+        if self.chasing:
+            self.len = self.len + 1
+            # lerp between witch and boo
+            self.x = self.startx + (self.game.boo.x - self.startx) * (self.len / self.total)
+            self.y = self.starty + (self.game.boo.y - self.starty) * (self.len / self.total)
+
+            if self.len > self.total:
+                self.chasing = False
+                self.chase_timeout = 60 * 3
+                self.len = 0
+                self.startx = self.x
+                self.starty = self.y
+     
 if __name__ == "__main__":
     game = Game(240, 180)
     game.start()
