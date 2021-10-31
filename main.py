@@ -3,6 +3,7 @@ from pygame.locals import *
 import time
 import math
 import json
+import os
 
 BUTTON_TEXT_COLOUR = (64, 28, 20)
 ## none button
@@ -34,7 +35,7 @@ class Game:
     def __init__(self, s_width, s_height):
         self.screen = pygame.display.set_mode((s_width, s_height), flags=pygame.SCALED)
         self.level = 1
-        self.levels = 1
+        self.levels = len(os.listdir("levels/"))
         self.paused = False
         self.running = True
         self.clock = pygame.time.Clock()
@@ -86,7 +87,7 @@ class Game:
         self.clean()
         self.level_start_time = time.time()
         self.boo = Boo(self)
-        self.backgrounds = [pygame.image.load(f"assets/level{self.level}_background.png")]
+        self.backgrounds = [pygame.image.load(f"assets/level1_background.png")]
 
 
         ##load game programatically
@@ -103,7 +104,7 @@ class Game:
                     Key(self, 16*x+8, 16*y+10, k)
                     k += 1
                 elif char == "D":
-                    Door(game, 16*x+8, 16*y+10)
+                    Door(self, 16*x+8, 16*y+10)
                 elif char == "W":
                     Witch(self, 16*x+8, 16*y-4)
                 elif char == "P":
@@ -119,7 +120,7 @@ class Game:
                 x+=1
             x=0
             y+=1
-        
+
         for key in kid_coords:
             Kid(self, kid_coords[key])
 
@@ -129,16 +130,15 @@ class Game:
         self.time_taken_in_game += time.time() - self.level_start_time
         self.clean()
 
-        pygame.draw.rect(surface, (0,0,0), pygame.Rect(0, 0, 240, 180))
+        pygame.draw.rect(self.screen, (0,0,0), pygame.Rect(0, 0, 240, 180))
 
-        pygame.font.Font("assets/font.ttf", 30)
-        text = self.font.render(f"Try again...", True, (255,255,255))
+        font = pygame.font.Font("assets/font.ttf", 30)
+        text = font.render(f"Try again...", True, (255,255,255))
         text_rect = text.get_rect(center=(240/2, 180/2))
-        screen.blit(text, text_rect)
+        self.screen.blit(text, text_rect)
 
-        pygame.time.wait(3000)
-
-        self.play(None, None, None)
+        Button(self, 65, 90, 110, 25, "CONTINUE", self.play)
+        Button(self, 80, 150, 80, 20, "QUIT", self.start_title_screen_callback)
 
     def level_completed(self):
         self.time_taken_in_game += time.time() - self.level_start_time
@@ -150,23 +150,22 @@ class Game:
 
     def game_completed(self):
         self.clean()
-        self.running = False
+        self.start_title_screen()
 
 
     def next_level(self):
         self.level += 1
         self.clean()
 
-        pygame.draw.rect(surface, (0,0,0), pygame.Rect(0, 0, 240, 180))
+        pygame.draw.rect(self.screen, (0,0,0), pygame.Rect(0, 0, 240, 180))
 
-        pygame.font.Font("assets/font.ttf", 30)
-        text = self.font.render(f"Level {self.level}", True, (255,255,255))
+        font = pygame.font.Font("assets/font.ttf", 30)
+        text = font.render(f"Level {self.level}", True, (255,255,255))
         text_rect = text.get_rect(center=(240/2, 180/2))
-        screen.blit(text, text_rect)
+        self.screen.blit(text, text_rect)
 
-        pygame.time.wait(3000)
-
-        self.play(None, None, None)
+        Button(self, 65, 90, 110, 25, "CONTINUE", self.play)
+        Button(self, 80, 150, 80, 20, "QUIT", self.start_title_screen_callback)
 
 
     def clean(self):
@@ -436,7 +435,7 @@ class Boo(pygame.sprite.Sprite):
 
             if in_y_axis(new_y) and in_x_axis(new_x):
                 if hasattr(barrier, "door") and len(self.game.uncaptured_key_sprites) == 0: # DOOR
-                    self.game.running = False
+                    self.game.level_completed()
                 x_delta = 0
                 y_delta = 0
 
