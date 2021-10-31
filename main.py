@@ -141,12 +141,7 @@ class Game:
         self.time_taken_in_game += time.time() - self.level_start_time
         self.clean()
 
-        pygame.draw.rect(self.screen, (0,0,0), pygame.Rect(0, 0, 240, 180))
-
-        font = pygame.font.Font("assets/font.ttf", 30)
-        text = font.render(f"Try again...", True, (255,255,255))
-        text_rect = text.get_rect(center=(240/2, 180/2))
-        self.screen.blit(text, text_rect)
+        self.backgrounds = [pygame.image.load("assets/title_background.png")]
 
         Button(self, 65, 90, 110, 25, "CONTINUE", self.play)
         Button(self, 80, 150, 80, 20, "QUIT", self.start_title_screen_callback)
@@ -187,12 +182,7 @@ class Game:
         self.level += 1
         self.clean()
 
-        pygame.draw.rect(self.screen, (0,0,0), pygame.Rect(0, 0, 240, 180))
-
-        font = pygame.font.Font("assets/font.ttf", 30)
-        text = font.render(f"Level {self.level}", True, (255,255,255))
-        text_rect = text.get_rect(center=(240/2, 180/2))
-        self.screen.blit(text, text_rect)
+        self.backgrounds = [pygame.image.load("assets/title_background.png")]
 
         Button(self, 65, 90, 110, 25, "CONTINUE", self.play)
         Button(self, 80, 150, 80, 20, "QUIT", self.start_title_screen_callback)
