@@ -33,7 +33,7 @@ class Game:
     def __init__(self, s_width, s_height):
         self.screen = pygame.display.set_mode((s_width, s_height), flags=pygame.SCALED)
         self.level = 1
-        self.levels = len(os.listdir("levels/"))
+        self.levels = len(os.listdir("levels/")) + 1
         self.paused = False
         self.running = True
         self.clock = pygame.time.Clock()
@@ -54,7 +54,7 @@ class Game:
         self.boo = None # ✨ The Player ✨
         self.level_start_time = time.time()
         self.time_taken_in_game = 0
-        self.total_time = 300
+        self.total_time = 10 * 60
         self.time_box = None
         self.key_box = None
         self.player_name = ""
@@ -196,7 +196,18 @@ class Game:
         TextInput(self, 19, 106, 203, 18, "Enter your name:", self.player_entered_name)
         Button(self, 65, 140, 110, 25, "CONTINUE", self.player_entered_name_button)
 
+    def game_over(self):
+        self.level = 1
+        self.clean()
+
+        self.backgrounds = [pygame.image.load("assets/game_over.png")]
+
+        TextBox(self, 125, 85, 10, str(int((self.level - 1) * 100 / self.levels))+"%")
+        TextInput(self, 19, 106, 203, 18, "Enter your name:", self.player_entered_name)
+        Button(self, 65, 140, 110, 25, "TRY AGAIN", self.player_entered_name_button)
+
     def player_entered_name_button(self, game, event, button):
+        self.game_over_ = False
         for s in self.all_sprites:
             if isinstance(s, TextInput):
                 name = s.text
@@ -216,7 +227,7 @@ class Game:
                 break
         with open("scores.json", "w") as scores_json:
             json.dump(leaderboard, scores_json, indent=3)
-
+        self.time_taken_in_game = 0
         self.start_title_screen()
 
 
@@ -238,9 +249,15 @@ class Game:
         self.witch = None
         self.boo = None
 
+        self.game_over_ = False
+
     def control_loop(self):
         frame_count = 0
         while self.running:
+            if self.time_taken_in_game > self.total_time and not self.game_over_:
+                self.game_over()
+                self.game_over_ = True
+                continue
             frame_count = (frame_count + 1) % 3600
             self.screen.blit(self.backgrounds[math.floor(frame_count / 10) % len(self.backgrounds)], (0, 0))
 
