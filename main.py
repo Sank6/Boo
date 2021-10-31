@@ -157,9 +157,9 @@ class Game:
 
         with open("scores.json") as scores_json:
             leaderboard = json.load(scores_json)
-        for i in len(leaderboard):
-            if self.time_taken_in_game < p[i]["time"]:
-                p.insert(i, {
+        for i in range(0, len(leaderboard)):
+            if self.time_taken_in_game < leaderboard[i]["time"]:
+                leaderboard.insert(i, {
                     "name": self.player_name,
                     "time": self.time_taken_in_game
                 })
@@ -312,7 +312,7 @@ class Witch(pygame.sprite.Sprite):
         ]
 
         self.potionDist = 16*4
-        self.potion_timeout = 10
+        self.potion_timeout = 2
         self.last_potion_thrown_at = 0
         self.direction_index = 0
 
@@ -339,23 +339,19 @@ class Potion(pygame.sprite.Sprite):
         self.game = game
         self.witch = witch
 
-        self.potion_colours = [
-            "y", "g"
-        ]
+        self.potion_colours = [ "b", "g", "r", "p", "y"]
+
+        self.picked_colour = self.potion_colours[random.randint(0, len(self.potion_colours)-1)]
 
         self.animation = []
-        for i in range(0, len(self.potion_colours) - 1):
-            temp = []
-            for i in range(0, 2):
-                temp.append(pygame.image.load("assets/potion/" + self.potion_colours[i] + str(i) + ".png"))
-
-            self.animation.append(temp)
-            ##AAAAAAAAAAA DO THIS LATER
+        
+        for i in range(1, 3):
+            self.animation.append(pygame.image.load("assets/potions/" + self.picked_colour + str(i) + ".png"))
 
         self.potion_effects = [
             "speed up",
             "slow down",
-            "reverse controls"
+            "do nothing"
         ]
 
         self.len = 1
