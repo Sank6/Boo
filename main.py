@@ -252,12 +252,9 @@ class Game:
             if self.boo != None:
                 self.boo.draw(frame_count)
 
-<<<<<<< HEAD
-=======
             for blackout in self.blackout_sprites:
                 blackout.draw(frame_count)
-                
->>>>>>> e9ae6e4237ac35be9975b9f5a03e83e841a72c69
+
             self.update()
 
             if (self.time_box):
@@ -464,7 +461,7 @@ class Blackout(pygame.sprite.Sprite):
         self.start_time = time.time()
 
     def draw(self, frame_count):
-        self.game.screen.fill((0, 0, 0))
+        pygame.draw.circle(self.game.screen, (0,0,0), (self.game.boo.x+8, self.game.boo.y+8), 24+240, 240)
 
     def update(self):
         if time.time() - self.start_time > 3:
@@ -853,6 +850,7 @@ class TextBox(pygame.sprite.Sprite):
         text = self.font.render(self.text, True, self.colour)
         text_rect = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
         self.game.screen.blit(text, (self.x, self.y))
+
 
 class Prop(pygame.sprite.Sprite):
     def __init__(self, game, x, y, prop):
