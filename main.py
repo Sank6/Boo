@@ -88,7 +88,8 @@ class Game:
         ]
         playButton = Button(self, 65, 90, 110, 25, "NEW GAME", self.start_game)
         playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.start_leaderboard_screen)
-        quitButton = Button(self, 80, 150, 80, 20, "QUIT", self.quit)
+        quitButton = Button(self, 37.5, 150, 80, 20, "QUIT", self.quit)
+        quitButton = Button(self, 122.5, 150, 80, 20, "CREDITS", self.credits)
 
     def start_title_screen_callback(self, button, event, game):
         pygame.mixer.music.fadeout(500)
@@ -101,6 +102,11 @@ class Game:
         self.backgrounds = [pygame.image.load("assets/leaderboard_background.png")]
         Button(self, 4, 155, 60, 20, "BACK", self.start_title_screen_callback)
         LeaderboardContent(self)
+
+    def credits(self, button, event, game):
+        self.clean()
+        self.backgrounds = [pygame.image.load("assets/credits.png")]
+        Button(self, 4, 155, 60, 20, "BACK", self.start_title_screen_callback)
 
     def quit(self, button, event, game):
         self.running = False
@@ -178,7 +184,7 @@ class Game:
         for sprite in self.captured_key_sprites:
             self.captured_key_sprites.remove(sprite)
 
-        self.time_box = TextBox(self, 208, 3, 6, "Loading")
+        self.time_box = TextBox(self, 213, 3, 6, "Loading")
         self.key_box = TextBox(self, 20, 1, 6, "0", colour=BUTTON_MAIN)
         BatCompanion(self, self.boo)
 
