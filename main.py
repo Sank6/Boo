@@ -61,6 +61,7 @@ class Game:
         self.time_box = None
         self.key_box = None
         self.player_name = ""
+        self.cut_scene = None
 
         self.keybinds = {
             "LEFT_KEY": pygame.K_a,
@@ -84,11 +85,11 @@ class Game:
     def start_title_screen(self):
         self.clean()
         self.backgrounds = [
-            pygame.image.load("assets/title_background_1.png"),
-            pygame.image.load("assets/title_background_2.png"),
-            pygame.image.load("assets/title_background_3.png"),
+            pygame.image.load("assets/title_background/1.png"),
+            pygame.image.load("assets/title_background/2.png"),
+            pygame.image.load("assets/title_background/3.png"),
         ]
-        playButton = Button(self, 65, 90, 110, 25, "NEW GAME", self.start_game)
+        playButton = Button(self, 65, 90, 110, 25, "NEW GAME", self.intro_cut_screen)
         playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.start_leaderboard_screen)
         quitButton = Button(self, 37.5, 150, 80, 20, "QUIT", self.quit)
         quitButton = Button(self, 122.5, 150, 80, 20, "CREDITS", self.credits)
@@ -105,6 +106,16 @@ class Game:
         Button(self, 4, 155, 60, 20, "BACK", self.start_title_screen_callback)
         LeaderboardContent(self)
 
+    def intro_cut_screen(self, button, event, game):
+        self.clean()
+        self.backgrounds = [
+            pygame.image.load("assets/cutscene/bg1.png"),
+            pygame.image.load("assets/cutscene/bg2.png"),
+            pygame.image.load("assets/cutscene/bg2.png")
+        ]
+        self.cut_scene = CutSceneContent(self)
+        Button(self, 4, 155, 60, 20, "SKIP", self.start_game)
+
     def credits(self, button, event, game):
         self.clean()
         self.backgrounds = [pygame.image.load("assets/credits.png")]
@@ -114,6 +125,8 @@ class Game:
         self.running = False
 
     def start_game(self, button, event, game):
+        self.all_sprites.remove(self.cut_scene)
+        self.cut_scene = None
         self.time_taken_in_game = 0
         pygame.mixer.music.fadeout(500)
         pygame.mixer.music.load("assets/audio.mp3")
@@ -194,7 +207,7 @@ class Game:
         self.time_taken_in_game += time.time() - self.level_start_time
         self.clean()
 
-        self.backgrounds = [pygame.image.load("assets/title_background.png")]
+        self.backgrounds = [pygame.image.load("assets/title_background/0.png")]
 
         Button(self, 65, 90, 110, 25, "TRY AGAIN", self.play)
         Button(self, 80, 150, 80, 20, "QUIT", self.start_title_screen_callback)
@@ -785,6 +798,55 @@ class LeaderboardContent(pygame.sprite.Sprite):
             text_rect = text.get_rect(topleft = (30 + text_rect.width, 55 + 11*i))
             screen.blit(text, text_rect)
 
+class CutSceneContent(pygame.sprite.Sprite):
+    def __init__(self, game):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+        self.game = game
+        
+        self.images = [
+            pygame.image.load("assets/cutscene/pre1.png"),
+            pygame.image.load("assets/cutscene/pre2.png"),
+            pygame.image.load("assets/cutscene/pre3.png"),
+            pygame.image.load("assets/cutscene/pre4.png"),
+            pygame.image.load("assets/cutscene/pre5.png"),
+            pygame.image.load("assets/cutscene/pre6.png"),
+            pygame.image.load("assets/cutscene/1.png"),
+            pygame.image.load("assets/cutscene/2.png"),
+            pygame.image.load("assets/cutscene/3.png"),
+            pygame.image.load("assets/cutscene/4.png"),
+            pygame.image.load("assets/cutscene/5.png"),
+            pygame.image.load("assets/cutscene/6.png"),
+        ]
+        self.timeout = 30
+        self.count = 0
+        self.starting_frame_count = -1
+
+    def draw(self, frame_count):
+        if self.starting_frame_count == -1:
+            self.starting_frame_count = frame_count
+        if self.count < 5:
+            self.timeout = 30
+        elif self.count == 5:
+            self.timeout = 90
+        elif self.count == 6:
+            self.timeout = 120
+        elif self.count > 6:
+            self.timeout = 360
+        if frame_count < self.starting_frame_count and frame_count > self.timeout:
+            self.starting_frame_count = frame_count
+            self.count += 1
+        elif frame_count - self.starting_frame_count > self.timeout:
+            self.starting_frame_count = frame_count
+            self.count += 1
+        
+        if self.count >= len(self.images):
+            self.game.all_sprites.remove(self)
+            self.game.cutscene_content = None
+            self.game.start_game(None, None, self.game)
+            return
+        
+        self.game.screen.blit(self.images[self.count], (0, 0))
 
 class Key(pygame.sprite.Sprite):
     def __init__(self, game, x, y, keyType):
