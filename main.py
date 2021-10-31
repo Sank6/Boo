@@ -23,12 +23,6 @@ BUTTON_PRESSED_MAIN = (162, 88, 69)
 ## hovered button
 BUTTON_HOVERED_MAIN = (207, 157, 122)
 
-# Keybinds
-LEFT_KEY = pygame.K_LEFT
-RIGHT_KEY = pygame.K_RIGHT
-UP_KEY = pygame.K_UP
-DOWN_KEY = pygame.K_DOWN
-
 pygame.init()
 pygame.display.set_caption("Boo - The Game")
 
@@ -56,7 +50,12 @@ class Game:
         self.level_start_time = time.time()
         self.time_taken_in_game = 0
 
-        
+        self.keybinds = {
+            "LEFT_KEY": pygame.K_LEFT,
+            "RIGHT_KEY": pygame.K_RIGHT,
+            "UP_KEY": pygame.K_UP,
+            "DOWN_KEY": pygame.K_DOWN,
+        }
 
         self.start_title_screen()
 
@@ -104,12 +103,12 @@ class Game:
                 if char == "#":
                     Barrier(self, 16*x+8, 16*y+10)
                 elif char == "K":
-                    Key(self, 16*x+8, 16*y+10, k)
+                    Key(self, 16*x+8, 16*y-6, k)
                     k += 1
                 elif char == "D":
                     Door(self, 16*x+8, 16*y+10)
                 elif char == "W":
-                    Witch(self, 16*x+8, 16*y-4)
+                    Witch(self, 16*x+8, 16*y-6)
                 elif char == "P":
                     self.boo.x = 16*x+8
                     self.boo.y = 16*y+10
@@ -117,9 +116,9 @@ class Game:
                     pass
                 elif char.isnumeric():
                     if char in kid_coords:
-                        kid_coords[char].append((16*x+8, 16*y-4))
+                        kid_coords[char].append((16*x+8, 16*y-6))
                     else:
-                        kid_coords[char] = [(16*x+8, 16*y-4)]
+                        kid_coords[char] = [(16*x+8, 16*y-6)]
                 x+=1
             x=0
             y+=1
@@ -220,6 +219,9 @@ class Kid(pygame.sprite.Sprite):
         self.x = points[0][0]
         self.y = points[0][1]
 
+        self.width = 16
+        self.height = 20
+
         self.images = {
             "down": pygame.image.load("assets/kid/down.png"),
             "down_walking_1": pygame.image.load("assets/kid/down_walking_1.png"),
@@ -294,7 +296,7 @@ class Witch(pygame.sprite.Sprite):
             pygame.image.load("assets/witch/left.png"),
         ]
 
-        self.potionDist = 16*10
+        self.potionDist = 16*4
         self.potion_timeout = 10
         self.last_potion_thrown_at = 0
         self.direction_index = 0
@@ -322,11 +324,18 @@ class Potion(pygame.sprite.Sprite):
         self.game = game
         self.witch = witch
 
-        self.animation = [
-            pygame.image.load("assets/potions/y1.png"),
-            pygame.image.load("assets/potions/y2.png"),
-            pygame.image.load("assets/potions/y3.png"),
+        self.potion_colours = [
+            "y", "g"
         ]
+
+        self.animation = []
+        for i in range(0, len(self.potion_colours) - 1):
+            temp = []
+            for i in range(0, 2):
+                temp.append(pygame.image.load("assets/potion/" + self.potion_colours[i] + str(i) + ".png"))
+
+            self.animation.append(temp)
+            ##AAAAAAAAAAA DO THIS LATER
 
         self.potion_effects = [
             "speed up",
@@ -345,7 +354,10 @@ class Potion(pygame.sprite.Sprite):
             self.affected_by_potion()
             return
         # Animate potion
-        self.game.screen.blit(self.animation[math.floor(self.len / 20) % 3], (self.x, self.y))
+        calc = math.floor(self.len / 20)
+        if calc >= len(self.animation):
+            calc = len(self.animation) - 1
+        self.game.screen.blit(self.animation[calc], (self.x, self.y))
         self.len = self.len + 1
 
         # lerp between witch and boo
@@ -357,28 +369,11 @@ class Potion(pygame.sprite.Sprite):
         potion_effect = random.randint(0, len(self.potion_effects) - 1)
         if potion_effect == 0:
             self.game.boo.speed = 1.5
-            time.sleep(5)
-            self.game.boo.speed = 1
         elif potion_effect == 1:
             self.game.boo.speed = 0.25
-            time.sleep(5)
-            self.game.boo.speed = 1
         elif potion_effect == 2:
-            up = UP_KEY
-            down = DOWN_KEY
-            left = LEFT_KEY
-            right = RIGHT_KEY
-            UP_KEY = down
-            DOWN_KEY = up
-            LEFT_KEY = right
-            RIGHT_KEY = left
-            time.sleep(5)
-            UP_KEY = up
-            DOWN_KEY = down
-            LEFT_KEY = left
-            RIGHT_KEY = right
-
-
+            pass
+            
 
 class Barrier(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -423,46 +418,38 @@ class Boo(pygame.sprite.Sprite):
 
     def draw(self, frame_count):
         boo = self.images[self.moving]
+
         self.game.screen.blit(boo, (self.x, self.y))
+
+    def concat(self, a, b, c):
+        yield from a
+        yield from b
+        yield from c
 
     def move(self, keys):
         x_delta = 0
         y_delta = 0
 
-        if keys[LEFT_KEY]:
+        if keys[self.game.keybinds["LEFT_KEY"]]:
             x_delta = -self.speed
             self.moving = "left"
-        if keys[RIGHT_KEY]:
+        if keys[self.game.keybinds["RIGHT_KEY"]]:
             x_delta = self.speed
             self.moving = "right"
-        if keys[UP_KEY]:
+        if keys[self.game.keybinds["UP_KEY"]]:
             y_delta = -self.speed
             self.moving = "up"
-        if keys[DOWN_KEY]:
+        if keys[self.game.keybinds["DOWN_KEY"]]:
             y_delta = self.speed
             self.moving = "down"
 
         new_x = self.x + x_delta
         new_y = self.y + y_delta
 
-        # Check if boo hit a key
-        for key in self.game.uncaptured_key_sprites:
-            check_x = lambda x: key.x <= x <= key.x+key.width
-            check_y = lambda y: key.y <= y <= key.y+key.height
-
-            in_x_axis = lambda x: check_x(x) or check_x(x+self.width) or check_x(new_x+self.width/2)
-            in_y_axis = lambda y: check_y(y) or check_y(y+self.height) or check_y(new_y+self.height/2)
-
-            if in_y_axis(new_y) and in_x_axis(new_x):
-                self.game.captured_key_sprites.add(key)
-                self.game.all_sprites.remove(key)
-                self.game.uncaptured_key_sprites.remove(key)
-                self.keys.append(key)
-
         # Check if boo hit a wall
-        for barrier in self.game.barrier_sprites:
-            check_x = lambda x: barrier.x <= x <= barrier.x+barrier.width
-            check_y = lambda y: barrier.y <= y <= barrier.y+barrier.height
+        for barrier in self.concat(self.game.barrier_sprites, self.game.kid_sprites, self.game.uncaptured_key_sprites):
+            check_x = lambda x: barrier.x < x < barrier.x+barrier.width
+            check_y = lambda y: barrier.y < y < barrier.y+barrier.height
 
             in_x_axis = lambda x: check_x(x) or check_x(x+self.width) or check_x(new_x+self.width/2)
             in_y_axis = lambda y: check_y(y) or check_y(y+self.height) or check_y(new_y+self.height/2)
@@ -470,22 +457,24 @@ class Boo(pygame.sprite.Sprite):
             if in_y_axis(new_y) and in_x_axis(new_x):
                 if hasattr(barrier, "door") and len(self.game.uncaptured_key_sprites) == 0: # DOOR
                     self.game.level_completed()
-                x_delta = 0
-                y_delta = 0
+                    x_delta = 0
+                    y_delta = 0
+                elif isinstance(barrier, Kid):
+                    self.game.game_completed()
+                elif isinstance(barrier, Key):
+                    self.game.captured_key_sprites.add(barrier)
+                    self.game.all_sprites.remove(barrier)
+                    self.game.uncaptured_key_sprites.remove(barrier)
+                    self.keys.append(barrier)
+                else:
+                    x_delta = 0
+                    y_delta = 0
 
         # Check that boo doesn't escape his container
         if new_x < 8 or new_x+self.width > 240-8:
             x_delta = 0
         if new_y < 10 or new_y+self.height > 180-10:
             y_delta = 0
-
-        # Animate Boo
-        if self.frames_left > 0:
-            self.frames_left -= 1
-        else:
-            self.frames_left = 10
-            self.y += 1 if self.up else -1
-            self.up = not self.up
 
         self.x += x_delta
         self.y += y_delta
