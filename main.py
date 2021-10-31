@@ -231,7 +231,6 @@ class Game:
         Button(self, 65, 140, 110, 25, "CONTINUE", self.player_entered_name_button)
 
     def game_over(self):
-        self.level = 1
         self.in_level = False
         self.clean()
 
@@ -240,6 +239,7 @@ class Game:
         TextBox(self, 125, 85, 10, str(int((self.level - 1) * 100 / self.levels))+"%")
         TextInput(self, 19, 106, 203, 18, "Enter your name:", self.player_entered_name)
         Button(self, 65, 140, 110, 25, "TRY AGAIN", self.player_entered_name_button)
+        self.level = 1
 
     def player_entered_name_button(self, game, event, button):
         self.game_over_ = False
