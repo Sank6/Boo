@@ -246,11 +246,14 @@ class Kid(pygame.sprite.Sprite):
         self.points = points
         self.current_target_index = 1
 
-        self.x = points[0][0]
-        self.y = points[0][1]
+        self.draw_x = points[0][0]
+        self.draw_y = points[0][1]
+
+        self.x = self.draw_x
+        self.y = self.draw_y + 12
 
         self.width = 16
-        self.height = 32
+        self.height = 20
 
         self.images = {
             "down": pygame.image.load("assets/kid/down.png"),
@@ -274,28 +277,31 @@ class Kid(pygame.sprite.Sprite):
 
         if target_point[0] != last_point[0]:
             dir = ((target_point[0]-last_point[0]) / abs(target_point[0]-last_point[0]))
-            self.x += 0.4 * dir
+            self.draw_x += 0.4 * dir
             if dir < 0:
                 self.dir = "left"
             else:
                 self.dir = "right"
         if target_point[1] != last_point[1]:
             dir = ((target_point[1]-last_point[1]) / abs(target_point[1]-last_point[1]))
-            self.y += 0.4 * dir
+            self.draw_y += 0.4 * dir
             if dir < 0:
                 self.dir = "up"
             else:
                 self.dir = "down"
 
-        if (self.x-0.2 <= target_point[0] <= self.x+0.2
-        and self.y-0.2 <= target_point[1] <= self.y+0.2):
-            self.x, self.y = target_point
+        if (self.draw_x-0.2 <= target_point[0] <= self.draw_x+0.2
+        and self.draw_y-0.2 <= target_point[1] <= self.draw_y+0.2):
+            self.draw_x, self.draw_y = target_point
             if self.current_target_index+1 == len(self.points):
                 self.current_target_index = 1
                 self.points.reverse()
             else:
                 self.current_target_index += 1
 
+        self.x = self.draw_x
+        self.y = self.draw_y + 12
+        
     def draw(self, frame_count):
         image = self.images[self.dir]
         if self.dir == "left" or self.dir == "right":
@@ -306,7 +312,7 @@ class Kid(pygame.sprite.Sprite):
                 image = self.images[self.dir + "_walking_1"]
             else:
                 image = self.images[self.dir + "_walking_2"]
-        self.game.screen.blit(image, (self.x, self.y))
+        self.game.screen.blit(image, (self.draw_x, self.draw_y))
 
 
 class Witch(pygame.sprite.Sprite):
