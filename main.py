@@ -139,6 +139,8 @@ class Game:
                 elif char == "P":
                     self.boo.x = 16*x+8
                     self.boo.y = 16*y+10
+                elif char == "T":
+                    Barrier(self, 16*x+8, 16*y+10, tree=True)
                 elif char == " ":
                     pass
                 elif char.isnumeric():
@@ -502,7 +504,7 @@ class Blackout(pygame.sprite.Sprite):
             self.game.all_sprites.remove(self)
 
 class Barrier(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, log = False):
+    def __init__(self, game, x, y, log = False, tree = False):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
         game.barrier_sprites.add(self)
@@ -510,9 +512,18 @@ class Barrier(pygame.sprite.Sprite):
         self.game = game
         self.x = x+1
         self.y = y+1
-        self.width = 14 if not log else 30
-        self.height = 14
-        self.image = pygame.image.load("assets/barrier.png") if not log else pygame.image.load("assets/log.png")
+        if log:
+            self.image = pygame.image.load("assets/barriers/log.png")
+            self.width = 30
+            self.height = 14
+        elif tree:
+            self.image = pygame.image.load("assets/barriers/tree.png")
+            self.width = 30
+            self.height = 30
+        else:
+            self.image = pygame.image.load("assets/barriers/barrier.png")
+            self.width = 14
+            self.height = 14
 
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
