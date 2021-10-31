@@ -166,6 +166,7 @@ class Game:
 
         self.backgrounds = [pygame.image.load("assets/end_screen.png")]
 
+        TextBox(self, 70, 85, 10, str(int(self.time_taken_in_game))+"s")
         TextInput(self, 19, 106, 203, 18, "Enter your name:", self.player_entered_name)
         Button(self, 65, 140, 110, 25, "CONTINUE", self.player_entered_name_button)
 
@@ -767,6 +768,7 @@ class TextInput(pygame.sprite.Sprite):
                 self.state = "none"
             else:
                 self.text += event.unicode
+
 
 class TextBox(pygame.sprite.Sprite):
     def __init__(self, game, x, y, font_size, text):
