@@ -28,6 +28,8 @@ INPUT_MAIN = (228, 201, 150)
 
 pygame.init()
 pygame.display.set_caption("Boo - The Game")
+programIcon = pygame.image.load('assets/boo/up.png')
+pygame.display.set_icon(programIcon)
 
 class Game:
     def __init__(self, s_width, s_height):
