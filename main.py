@@ -534,6 +534,7 @@ class Potion(pygame.sprite.Sprite):
             debuff = Debuff(self.game, len(self.game.boo.debuffs), "blackout")
             self.game.boo.debuffs.append(debuff)
 
+
 class Blackout(pygame.sprite.Sprite):
     def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
@@ -701,6 +702,16 @@ class Boo(pygame.sprite.Sprite):
                     self.game.uncaptured_key_sprites.remove(barrier)
                     self.keys.append(barrier)
                 else:
+                    #
+                    # if not in_x_axis(self.x) and in_y_axis(new_y):
+                    #     x_delta = 0
+                    # if (in_x_axis(new_x) and not in_y_axis(new_y-1)):
+                    #     y_delta = 0
+                    # if (in_x_axis(new_x) and not in_y_axis(new_y+1)):
+                    #     y_delta = 0
+                    #
+                    # new_x = self.x + x_delta
+                    # new_y = self.y + y_delta
                     x_delta = 0
                     y_delta = 0
 
@@ -798,12 +809,13 @@ class LeaderboardContent(pygame.sprite.Sprite):
             text_rect = text.get_rect(topleft = (30 + text_rect.width, 55 + 11*i))
             screen.blit(text, text_rect)
 
+
 class CutSceneContent(pygame.sprite.Sprite):
     def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
         self.game = game
-        
+
         self.images = [
             pygame.image.load("assets/cutscene/pre1.png"),
             pygame.image.load("assets/cutscene/pre2.png"),
@@ -839,14 +851,15 @@ class CutSceneContent(pygame.sprite.Sprite):
         elif frame_count - self.starting_frame_count > self.timeout:
             self.starting_frame_count = frame_count
             self.count += 1
-        
+
         if self.count >= len(self.images):
             self.game.all_sprites.remove(self)
             self.game.cutscene_content = None
             self.game.start_game(None, None, self.game)
             return
-        
+
         self.game.screen.blit(self.images[self.count], (0, 0))
+
 
 class Key(pygame.sprite.Sprite):
     def __init__(self, game, x, y, keyType):
