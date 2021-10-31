@@ -57,7 +57,7 @@ class Game:
         self.witch = None
         self.boo = None # ✨ The Player ✨
         self.time_taken_in_game = 0
-        self.total_time = 3 * 60
+        self.total_time = 4 * 60
         self.time_box = None
         self.key_box = None
         self.player_name = ""
@@ -547,6 +547,7 @@ class Blackout(pygame.sprite.Sprite):
                     if debuff.prop == "blackout":
                         debuff.delete_sprite()
 
+
 class Barrier(pygame.sprite.Sprite):
     def __init__(self, game, x, y, log = False, tree = False):
         pygame.sprite.Sprite.__init__(self)
@@ -1000,6 +1001,7 @@ class Prop(pygame.sprite.Sprite):
     def draw(self, frame_count):
         self.game.screen.blit(self.image, (self.x, self.y))
 
+
 class Debuff(pygame.sprite.Sprite):
     def __init__(self, game, index, prop):
         pygame.sprite.Sprite.__init__(self)
@@ -1029,6 +1031,7 @@ class Debuff(pygame.sprite.Sprite):
         self.game.debuff_sprites.remove(self)
         self.game.all_sprites.remove(self)
         self.kill()
+
 
 if __name__ == "__main__":
     game = Game(240, 180)
