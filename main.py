@@ -74,8 +74,6 @@ class Game:
         playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.start_leaderboard_screen)
         quitButton = Button(self, 80, 150, 80, 20, "QUIT", self.quit)
 
-        TextInput(self, 0, 0, 100, 25, "", self.play)
-
     def start_title_screen_callback(self, button, event, game):
         self.start_title_screen()
 
@@ -155,18 +153,25 @@ class Game:
     def game_completed(self):
         self.clean()
 
+        TextInput(self, 30, 100, 180, 25, "", self.player_entered_name)
+
+    def player_entered_name(self, name):
+        self.player_name = name
+
         with open("scores.json") as scores_json:
             leaderboard = json.load(scores_json)
         for i in range(0, len(leaderboard)):
             if self.time_taken_in_game < leaderboard[i]["time"]:
                 leaderboard.insert(i, {
                     "name": self.player_name,
-                    "time": self.time_taken_in_game
+                    "time": int(self.time_taken_in_game)
                 })
+                break
         with open("scores.json", "w") as scores_json:
             json.dump(leaderboard, scores_json, indent=3)
 
         self.start_title_screen()
+
 
 
     def next_level(self):
