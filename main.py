@@ -163,7 +163,8 @@ class Game:
                     "name": self.player_name,
                     "time": self.time_taken_in_game
                 })
-
+        with open("scores.json", "w") as scores_json:
+            json.dump(scores_json, leaderboard)
 
         self.start_title_screen()
 
