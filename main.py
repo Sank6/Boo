@@ -153,7 +153,7 @@ class Game:
 
         for sprite in self.captured_key_sprites:
             self.captured_key_sprites.remove(sprite)
-        
+
         self.time_box = TextBox(self, 208, 3, 6, "Loading")
         self.key_box = TextBox(self, 20, 1, 6, "0", colour=BUTTON_MAIN)
         BatCompanion(self, self.boo)
@@ -254,7 +254,7 @@ class Game:
 
             for blackout in self.blackout_sprites:
                 blackout.draw(frame_count)
-                
+
             self.update()
 
             if (self.time_box):
@@ -462,7 +462,7 @@ class Blackout(pygame.sprite.Sprite):
         self.start_time = time.time()
 
     def draw(self, frame_count):
-        self.game.screen.fill((0, 0, 0))
+        pygame.draw.circle(self.game.screen, (0,0,0), (self.game.boo.x+8, self.game.boo.y+8), 24+240, 240)
 
     def update(self):
         if time.time() - self.start_time > 3:
@@ -585,7 +585,7 @@ class Boo(pygame.sprite.Sprite):
         if new_y < 10 or new_y+self.height > 180-10:
             y_delta = 0
 
-        
+
         if self.stunned:
             if time.time() - self.stun_timer > self.stun_timeout:
                 self.stunned = False
@@ -641,7 +641,7 @@ class LeaderboardContent(pygame.sprite.Sprite):
 
         with open("scores.json") as scores_json:
             self.leaderboard = json.load(scores_json)
-            self.leaderboard = self.leaderboard[:5]
+            self.leaderboard = self.leaderboard[:8]
         self.number_font = pygame.font.Font("assets/font.ttf", 10)
 
     def update(self):
@@ -862,6 +862,7 @@ class TextBox(pygame.sprite.Sprite):
         text = self.font.render(self.text, True, self.colour)
         text_rect = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
         self.game.screen.blit(text, (self.x, self.y))
+
 
 class Prop(pygame.sprite.Sprite):
     def __init__(self, game, x, y, prop):
