@@ -157,7 +157,9 @@ class Game:
     def game_completed(self):
         self.clean()
 
-        TextInput(self, 30, 100, 180, 25, "", self.player_entered_name)
+        self.backgrounds = [pygame.image.load("assets/end_screen.png")]
+
+        TextInput(self, 30, 100, 180, 20, "Enter your name:", self.player_entered_name)
 
     def player_entered_name(self, name):
         self.player_name = name
@@ -291,7 +293,7 @@ class Kid(pygame.sprite.Sprite):
 
         self.x = self.draw_x
         self.y = self.draw_y + 12
-        
+
     def draw(self, frame_count):
         image = self.images[self.dir]
         if self.dir == "left" or self.dir == "right":
@@ -698,7 +700,8 @@ class TextInput(pygame.sprite.Sprite):
         self.y = y
         self.width = width
         self.height = height
-        self.text = text
+        self.tooltip = text
+        self.text = ""
         self.callback = callback
         self.font = pygame.font.Font("assets/font.ttf", height-14)
 
@@ -710,13 +713,8 @@ class TextInput(pygame.sprite.Sprite):
             pygame.draw.rect(screen, BUTTON_OUTLINE_0, [self.x,self.y+1,self.width,self.height-2])
             pygame.draw.rect(screen, BUTTON_OUTLINE_0, [self.x+1,self.y, self.width-2,self.height])
             pygame.draw.rect(screen, BUTTON_OUTLINE_1, [self.x+1,self.y+1, self.width-2,self.height-2])
-            pygame.draw.rect(screen, BUTTON_OUTLINE_2, [self.x+2,self.y+2,self.width-4,self.height-4])
-            pygame.draw.rect(screen, BUTTON_OUTLINE_3, [self.x+3,self.y+3,self.width-6,self.height-6])
 
-            pygame.draw.rect(screen, BUTTON_MAIN, [self.x+4,self.y+4,self.width-8,self.height-8])
-
-            pygame.draw.rect(screen, BUTTON_OUTLINE_SHADOW, [self.x+3,self.y+self.height-3,self.width-4,2])
-            pygame.draw.rect(screen, BUTTON_OUTLINE_SHADOW, [self.x+self.width-3,self.y+4,2,self.height-5])
+            pygame.draw.rect(screen, BUTTON_MAIN, [self.x+2,self.y+2,self.width-4,self.height-4])
 
         elif self.state == "active":
             pygame.draw.rect(screen, BUTTON_PRESSED_OUTLINE_0, [self.x+1,self.y+2,self.width-2,self.height-4])
@@ -725,9 +723,13 @@ class TextInput(pygame.sprite.Sprite):
 
             pygame.draw.rect(screen, BUTTON_PRESSED_MAIN, [self.x+3,self.y+3,self.width-6,self.height-6])
 
+        text = self.font.render(self.tooltip, True, BUTTON_TEXT_COLOUR)
+        text_rect_tt = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
+        screen.blit(text, (self.x + 6, self.y + 6))
+
         text = self.font.render(self.text, True, BUTTON_TEXT_COLOUR)
         text_rect = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
-        screen.blit(text, (self.x + 6, self.y + 6))
+        screen.blit(text, (text_rect_tt.width + self.x + 6, self.y + 6))
 
     def check_state(self, event):
         mouse = pygame.mouse.get_pos()
