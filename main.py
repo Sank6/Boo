@@ -140,6 +140,7 @@ class Game:
         for key in kid_coords:
             Kid(self, kid_coords[key])
 
+        self.time_taken_in_game = 0
         self.time_box = TextBox(self, 208, 3, 6, "Loading")
         BatCompanion(self, self.boo)
 
