@@ -554,14 +554,24 @@ class Boo(pygame.sprite.Sprite):
             "up": pygame.image.load("assets/boo/up_inv.png"),
             "down": pygame.image.load("assets/boo/down_inv.png"),
         }
+        self.images_stunned = {
+            "stun1": pygame.image.load("assets/boo/stun_1.png"),
+            "stun2": pygame.image.load("assets/boo/stun_2.png"),
+        }
 
     def draw(self, frame_count):
         self.flash_frames -= 1
         if self.affected_by_potion != False and time.time() - self.affected_by_potion < 2 and self.flash_frames > 20:
-            boo = self.images_inverted[self.moving]
+            if self.stunned:
+                boo = self.images_stunned["stun1"]
+            else:
+                boo = self.images_inverted[self.moving]
             self.game.screen.blit(boo, (self.x, self.y))
         elif self.affected_by_potion != False and time.time() - self.affected_by_potion < 2:
-            boo = self.images[self.moving]
+            if self.stunned:
+                boo = self.images_stunned["stun2"]
+            else:
+                boo = self.images[self.moving]
             self.game.screen.blit(boo, (self.x, self.y))
         else:
             self.affected_by_potion = False
