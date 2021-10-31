@@ -23,6 +23,9 @@ BUTTON_PRESSED_MAIN = (162, 88, 69)
 ## hovered button
 BUTTON_HOVERED_MAIN = (207, 157, 122)
 
+## text input box
+INPUT_MAIN = (228, 201, 150)
+
 pygame.init()
 pygame.display.set_caption("Boo - The Game")
 
@@ -162,7 +165,14 @@ class Game:
 
         self.backgrounds = [pygame.image.load("assets/end_screen.png")]
 
-        TextInput(self, 30, 100, 180, 20, "Enter your name:", self.player_entered_name)
+        TextInput(self, 19, 106, 203, 18, "Enter your name:", self.player_entered_name)
+        Button(self, 65, 140, 110, 25, "CONTINUE", self.player_entered_name_button)
+
+    def player_entered_name_button(self, game, event, button):
+        for s in self.all_sprites:
+            if isinstance(s, TextInput):
+                name = s.text
+        self.player_entered_name(name)
 
     def player_entered_name(self, name):
         self.player_name = name
@@ -712,7 +722,7 @@ class TextInput(pygame.sprite.Sprite):
         self.tooltip = text
         self.text = ""
         self.callback = callback
-        self.font = pygame.font.Font("assets/font.ttf", height-14)
+        self.font = pygame.font.Font("assets/font.ttf", height-10)
 
         self.state = "none" # "none", "active"
 
@@ -723,7 +733,7 @@ class TextInput(pygame.sprite.Sprite):
             pygame.draw.rect(screen, BUTTON_OUTLINE_0, [self.x+1,self.y, self.width-2,self.height])
             pygame.draw.rect(screen, BUTTON_OUTLINE_1, [self.x+1,self.y+1, self.width-2,self.height-2])
 
-            pygame.draw.rect(screen, BUTTON_MAIN, [self.x+2,self.y+2,self.width-4,self.height-4])
+            pygame.draw.rect(screen, INPUT_MAIN, [self.x+2,self.y+2,self.width-4,self.height-4])
 
         elif self.state == "active":
             pygame.draw.rect(screen, BUTTON_PRESSED_OUTLINE_0, [self.x+1,self.y+2,self.width-2,self.height-4])
@@ -734,11 +744,11 @@ class TextInput(pygame.sprite.Sprite):
 
         text = self.font.render(self.tooltip, True, BUTTON_TEXT_COLOUR)
         text_rect_tt = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
-        screen.blit(text, (self.x + 6, self.y + 6))
+        screen.blit(text, (self.x + 4, self.y + 4))
 
         text = self.font.render(self.text, True, BUTTON_TEXT_COLOUR)
         text_rect = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
-        screen.blit(text, (text_rect_tt.width + self.x + 6, self.y + 6))
+        screen.blit(text, (text_rect_tt.width + self.x + 4, self.y + 4))
 
     def check_state(self, event):
         mouse = pygame.mouse.get_pos()
