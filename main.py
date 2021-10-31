@@ -435,6 +435,7 @@ class Potion(pygame.sprite.Sprite):
     def affected_by_potion(self):
         # rng
         potion_effect = random.randint(0, len(self.potion_effects) - 1)
+        self.game.boo.affected_by_potion = time.time()
         if potion_effect == 0:
             self.game.boo.speed = 1.5
         elif potion_effect == 1:
@@ -502,6 +503,7 @@ class Boo(pygame.sprite.Sprite):
         self.up = True
         self.frames_left = 10
 
+        self.affected_by_potion = False
         self.stunned = False
         self.stun_timer = 0
         self.stun_timeout = 2
@@ -512,12 +514,22 @@ class Boo(pygame.sprite.Sprite):
             "up": pygame.image.load("assets/boo/up.png"),
             "down": pygame.image.load("assets/boo/down.png"),
         }
+        self.images_inverted = {
+            "left": pygame.image.load("assets/boo/left_inv.png"),
+            "right": pygame.image.load("assets/boo/right_inv.png"),
+            "up": pygame.image.load("assets/boo/up_inv.png"),
+            "down": pygame.image.load("assets/boo/down_inv.png"),
+        }
 
     def draw(self, frame_count):
-        boo = self.images[self.moving]
-
-        self.game.screen.blit(boo, (self.x, self.y))
-
+        if self.affected_by_potion != False and time.time() - self.affected_by_potion < 2:
+            boo = self.images_inverted[self.moving]
+            self.game.screen.blit(boo, (self.x, self.y))
+        else:
+            self.affected_by_potion = False
+            boo = self.images[self.moving]
+            self.game.screen.blit(boo, (self.x, self.y))
+    
     def concat(self, a, b, c):
         yield from a
         yield from b
