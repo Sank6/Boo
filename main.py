@@ -67,6 +67,9 @@ class Game:
         }
 
         self.start_title_screen()
+        
+        pygame.mixer.music.load("assets/title_screen_music.mp3")
+        pygame.mixer.music.play(-1)
 
     def start(self):
         self.control_loop()
@@ -83,6 +86,9 @@ class Game:
         quitButton = Button(self, 80, 150, 80, 20, "QUIT", self.quit)
 
     def start_title_screen_callback(self, button, event, game):
+        pygame.mixer.music.fadeout(1000)
+        pygame.mixer.music.load("assets/title_screen_music.mp3")
+        pygame.mixer.music.play(-1)
         self.start_title_screen()
 
     def start_leaderboard_screen(self, button, event, game):
@@ -96,6 +102,9 @@ class Game:
 
     def start_game(self, button, event, game):
         self.time_taken_in_game = 0
+        pygame.mixer.music.fadeout(1000)
+        pygame.mixer.music.load("assets/audio.mp3")
+        pygame.mixer.music.play(-1)
         self.play(button, event, game)
 
     def play(self, button, event, game):
@@ -177,7 +186,7 @@ class Game:
 
         self.backgrounds = [pygame.image.load("assets/title_background.png")]
 
-        Button(self, 65, 90, 110, 25, "CONTINUE", self.play)
+        Button(self, 65, 90, 110, 25, "TRY AGAIN", self.play)
         Button(self, 80, 150, 80, 20, "QUIT", self.start_title_screen_callback)
 
     def level_completed(self):
