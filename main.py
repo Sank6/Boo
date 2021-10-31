@@ -46,6 +46,7 @@ class Game:
         self.potion_sprites = pygame.sprite.Group()
         self.uncaptured_key_sprites = pygame.sprite.Group()
         self.captured_key_sprites = pygame.sprite.Group()
+        self.props_sprites = pygame.sprite.Group()
 
         # Custom Sprites
         self.witch = None
@@ -76,7 +77,7 @@ class Game:
             pygame.image.load("assets/title_background_2.png"),
             pygame.image.load("assets/title_background_3.png"),
         ]
-        playButton = Button(self, 65, 90, 110, 25, "NEW GAME", self.play)
+        playButton = Button(self, 65, 90, 110, 25, "NEW GAME", self.start_game)
         playButton = Button(self, 65, 120, 110, 25, "HI-SCORES", self.start_leaderboard_screen)
         quitButton = Button(self, 80, 150, 80, 20, "QUIT", self.quit)
 
@@ -92,11 +93,20 @@ class Game:
     def quit(self, button, event, game):
         self.running = False
 
+    def start_game(self, button, event, game):
+        self.time_taken_in_game = 0
+        self.play(button, event, game)
+
     def play(self, button, event, game):
         self.clean()
         self.level_start_time = time.time()
         self.boo = Boo(self)
         self.backgrounds = [pygame.image.load(f"assets/level1_background.png")]
+
+        for i in range(0, 20):
+            prop = random.choice(["rock", "rocks", "mushroom", "weed"])
+            Prop(self, random.randint(0, self.screen.get_width()), random.randint(0, self.screen.get_height()), prop)
+
 
         ##load game programatically
         lines = []
@@ -140,8 +150,7 @@ class Game:
 
         for key in kid_coords:
             Kid(self, kid_coords[key])
-
-        self.time_taken_in_game = 0
+        
         self.time_box = TextBox(self, 208, 3, 6, "Loading")
         self.key_box = TextBox(self, 20, 1, 6, "0", colour=BUTTON_MAIN)
         BatCompanion(self, self.boo)
@@ -164,6 +173,7 @@ class Game:
             self.next_level()
 
     def game_completed(self):
+        self.level = 1
         self.clean()
 
         self.backgrounds = [pygame.image.load("assets/end_screen.png")]
@@ -236,6 +246,9 @@ class Game:
             for sprite in self.all_sprites:
                 sprite.draw(frame_count)
 
+            if self.boo != None:
+                self.boo.draw(frame_count)
+                
             self.update()
 
             if (self.time_box):
@@ -794,6 +807,19 @@ class TextBox(pygame.sprite.Sprite):
         text_rect = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
         self.game.screen.blit(text, (self.x, self.y))
 
+class Prop(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, prop):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
+
+        self.game = game
+        self.x = x
+        self.y = y
+
+        self.image = pygame.image.load(f"assets/props/{prop}.png")
+
+    def draw(self, frame_count):
+        self.game.screen.blit(self.image, (self.x, self.y))
 
 if __name__ == "__main__":
     game = Game(240, 180)
