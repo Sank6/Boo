@@ -471,7 +471,7 @@ class Boo(pygame.sprite.Sprite):
                     x_delta = 0
                     y_delta = 0
                 elif isinstance(barrier, Kid):
-                    self.game.game_completed()
+                    self.game.restart_level()
                 elif isinstance(barrier, Key):
                     self.game.captured_key_sprites.add(barrier)
                     self.game.all_sprites.remove(barrier)
