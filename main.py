@@ -64,10 +64,10 @@ class Game:
         self.cut_scene = None
 
         self.keybinds = {
-            "LEFT_KEY": pygame.K_a,
-            "RIGHT_KEY": pygame.K_d,
-            "UP_KEY": pygame.K_w,
-            "DOWN_KEY": pygame.K_s,
+            "LEFT_KEY": [pygame.K_a, pygame.K_LEFT],
+            "RIGHT_KEY": [pygame.K_d, pygame.K_RIGHT],
+            "UP_KEY": [pygame.K_w, pygame.K_UP],
+            "DOWN_KEY": [pygame.K_s, pygame.K_DOWN],
         }
 
         self.default_keybinds = self.keybinds.copy()
@@ -269,7 +269,7 @@ class Game:
         self.level += 1
         self.clean()
 
-        self.backgrounds = [pygame.image.load("assets/title_background.png")]
+        self.backgrounds = [pygame.image.load("assets/title_background/1.png")]
 
         Button(self, 65, 90, 110, 25, "CONTINUE", self.play)
         Button(self, 80, 150, 80, 20, "QUIT", self.start_title_screen_callback)
@@ -665,16 +665,16 @@ class Boo(pygame.sprite.Sprite):
         x_delta = 0
         y_delta = 0
 
-        if keys[self.game.keybinds["LEFT_KEY"]]:
+        if keys[self.game.keybinds["LEFT_KEY"][0]] or keys[self.game.keybinds["LEFT_KEY"][1]]:
             x_delta = -self.speed
             self.moving = "left"
-        if keys[self.game.keybinds["RIGHT_KEY"]]:
+        if keys[self.game.keybinds["RIGHT_KEY"][0]] or keys[self.game.keybinds["RIGHT_KEY"][1]]:
             x_delta = self.speed
             self.moving = "right"
-        if keys[self.game.keybinds["UP_KEY"]]:
+        if keys[self.game.keybinds["UP_KEY"][0]] or keys[self.game.keybinds["UP_KEY"][1]]:
             y_delta = -self.speed
             self.moving = "up"
-        if keys[self.game.keybinds["DOWN_KEY"]]:
+        if keys[self.game.keybinds["DOWN_KEY"][0]] or keys[self.game.keybinds["DOWN_KEY"][1]]:
             y_delta = self.speed
             self.moving = "down"
 
@@ -840,11 +840,13 @@ class CutSceneContent(pygame.sprite.Sprite):
         if self.count < 5:
             self.timeout = 30
         elif self.count == 5:
-            self.timeout = 90
+            self.timeout = 180
         elif self.count == 6:
-            self.timeout = 120
-        elif self.count > 6:
-            self.timeout = 360
+            self.timeout = 240
+        elif self.count <  10:
+            self.timeout = 720
+        else:
+            self.timeout = 1080
         if frame_count < self.starting_frame_count and frame_count > self.timeout:
             self.starting_frame_count = frame_count
             self.count += 1
