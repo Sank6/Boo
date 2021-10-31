@@ -49,6 +49,7 @@ class Game:
         self.boo = None # ✨ The Player ✨
         self.level_start_time = time.time()
         self.time_taken_in_game = 0
+        self.time_box = None
         self.player_name = ""
 
         self.keybinds = {
@@ -218,6 +219,12 @@ class Game:
                 sprite.draw(frame_count)
 
             self.update()
+
+            # Update timer
+            self.all_sprites.remove(self.time_box)
+            self.time_box = TextBox(self, 208, 3, str(int(self.time_taken_in_game)))
+
+            self.time_taken_in_game += 1/60
 
         pygame.quit()
 
@@ -748,7 +755,24 @@ class TextInput(pygame.sprite.Sprite):
             else:
                 self.text += event.unicode
 
+class TextBox(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, text):
+        pygame.sprite.Sprite.__init__(self)
+        game.all_sprites.add(self)
 
+        self.game = game
+        self.x = x
+        self.y = y
+        self.height = 20
+        self.width = 50
+        self.text = text
+
+        self.font = pygame.font.Font("assets/font.ttf", 6)
+
+    def draw(self, frame_count):
+        text = self.font.render(self.text, True, BUTTON_TEXT_COLOUR)
+        text_rect = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
+        self.game.screen.blit(text, (self.x, self.y))
 
 
 if __name__ == "__main__":
