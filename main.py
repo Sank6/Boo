@@ -3,6 +3,7 @@ from pygame.locals import *
 import time
 import math
 import json
+import random
 
 BUTTON_TEXT_COLOUR = (64, 28, 20)
 ## none button
@@ -53,6 +54,8 @@ class Game:
         self.boo = None # ✨ The Player ✨
         self.level_start_time = time.time()
         self.time_taken_in_game = 0
+
+        
 
         self.start_title_screen()
 
@@ -264,7 +267,7 @@ class Witch(pygame.sprite.Sprite):
             pygame.image.load("assets/witch/left.png"),
         ]
 
-        self.potionDist = 16*2
+        self.potionDist = 16*10
         self.potion_timeout = 10
         self.last_potion_thrown_at = 0
         self.direction_index = 0
@@ -298,6 +301,12 @@ class Potion(pygame.sprite.Sprite):
             pygame.image.load("assets/potions/y3.png"),
         ]
 
+        self.potion_effects = [
+            "speed up",
+            "slow down",
+            "reverse controls"
+        ]
+
         self.len = 1
         self.total = 60
 
@@ -306,7 +315,7 @@ class Potion(pygame.sprite.Sprite):
         if self.len > self.total:
             self.game.potion_sprites.remove(self)
             self.game.all_sprites.remove(self)
-            self.player_dies()
+            self.affected_by_potion()
             return
         # Animate potion
         self.game.screen.blit(self.animation[math.floor(self.len / 20) % 3], (self.x, self.y))
@@ -316,8 +325,32 @@ class Potion(pygame.sprite.Sprite):
         self.x = self.witch.x + (self.game.boo.x - self.witch.x) * (self.len / self.total)
         self.y = self.witch.y + (self.game.boo.y - self.witch.y) * (self.len / self.total)
 
-    def player_dies(self):
-        pass
+    def affected_by_potion(self):
+        # rng
+        potion_effect = random.randint(0, len(self.potion_effects) - 1)
+        if potion_effect == 0:
+            self.game.boo.speed = 1.5
+            time.sleep(5)
+            self.game.boo.speed = 1
+        elif potion_effect == 1:
+            self.game.boo.speed = 0.25
+            time.sleep(5)
+            self.game.boo.speed = 1
+        elif potion_effect == 2:
+            up = UP_KEY
+            down = DOWN_KEY
+            left = LEFT_KEY
+            right = RIGHT_KEY
+            UP_KEY = down
+            DOWN_KEY = up
+            LEFT_KEY = right
+            RIGHT_KEY = left
+            time.sleep(5)
+            UP_KEY = up
+            DOWN_KEY = down
+            LEFT_KEY = left
+            RIGHT_KEY = right
+
 
 
 class Barrier(pygame.sprite.Sprite):
@@ -350,6 +383,7 @@ class Boo(pygame.sprite.Sprite):
         self.game = game
         self.moving = "down" # "up", "down", "left", "right"
 
+        self.speed = 1
         self.up = True
         self.frames_left = 10
 
@@ -369,16 +403,16 @@ class Boo(pygame.sprite.Sprite):
         y_delta = 0
 
         if keys[LEFT_KEY]:
-            x_delta = -1
+            x_delta = -self.speed
             self.moving = "left"
         if keys[RIGHT_KEY]:
-            x_delta = 1
+            x_delta = self.speed
             self.moving = "right"
         if keys[UP_KEY]:
-            y_delta = -1
+            y_delta = -self.speed
             self.moving = "up"
         if keys[DOWN_KEY]:
-            y_delta = 1
+            y_delta = self.speed
             self.moving = "down"
 
         new_x = self.x + x_delta
