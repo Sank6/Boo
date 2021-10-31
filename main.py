@@ -847,7 +847,7 @@ class CutSceneContent(pygame.sprite.Sprite):
         elif self.count <  10:
             self.timeout = 720
         else:
-            self.timeout = 1080
+            self.timeout = 540
         if frame_count < self.starting_frame_count and frame_count > self.timeout:
             self.starting_frame_count = frame_count
             self.count += 1
