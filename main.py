@@ -163,7 +163,8 @@ class Game:
                     "name": self.player_name,
                     "time": self.time_taken_in_game
                 })
-
+        with open("scores.json", "w") as scores_json:
+            json.dump(leaderboard, scores_json, indent=3)
 
         self.start_title_screen()
 
@@ -344,7 +345,7 @@ class Potion(pygame.sprite.Sprite):
         self.picked_colour = self.potion_colours[random.randint(0, len(self.potion_colours)-1)]
 
         self.animation = []
-        
+
         for i in range(1, 3):
             self.animation.append(pygame.image.load("assets/potions/" + self.picked_colour + str(i) + ".png"))
 
