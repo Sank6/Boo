@@ -38,6 +38,7 @@ class Game:
         self.levels = len(os.listdir("levels/"))
         self.paused = False
         self.running = True
+        self.in_level = False
         self.clock = pygame.time.Clock()
 
         self.all_sprites = pygame.sprite.Group()
@@ -55,9 +56,8 @@ class Game:
         # Custom Sprites
         self.witch = None
         self.boo = None # ✨ The Player ✨
-        self.level_start_time = time.time()
         self.time_taken_in_game = 0
-        self.total_time = 10 * 60
+        self.total_time = 3 * 60
         self.time_box = None
         self.key_box = None
         self.player_name = ""
@@ -74,7 +74,7 @@ class Game:
         self.start_title_screen()
 
         self.keybinds_reversed = False
-        
+
         pygame.mixer.music.load("assets/title_screen_music.mp3")
         pygame.mixer.music.play(-1)
 
@@ -130,7 +130,7 @@ class Game:
 
     def play(self, button, event, game):
         self.clean()
-        self.level_start_time = time.time()
+        self.in_level = True
         self.boo = Boo(self)
         self.backgrounds = [pygame.image.load(f"assets/level_backgrounds/{self.level}.png")]
 
@@ -191,8 +191,8 @@ class Game:
         BatCompanion(self, self.boo)
 
     def restart_level(self):
-        self.time_taken_in_game += time.time() - self.level_start_time
         self.clean()
+        self.in_level = False
 
         self.backgrounds = [pygame.image.load("assets/title_background.png")]
 
@@ -200,8 +200,7 @@ class Game:
         Button(self, 80, 150, 80, 20, "QUIT", self.start_title_screen_callback)
 
     def level_completed(self):
-        self.time_taken_in_game += time.time() - self.level_start_time
-
+        self.in_level = False
         if self.level == self.levels:
             self.game_completed()
         else:
@@ -219,6 +218,7 @@ class Game:
 
     def game_over(self):
         self.level = 1
+        self.in_level = False
         self.clean()
 
         self.backgrounds = [pygame.image.load("assets/game_over.png")]
@@ -239,13 +239,11 @@ class Game:
 
         with open("scores.json") as scores_json:
             leaderboard = json.load(scores_json)
-        for i in range(0, len(leaderboard)):
-            if self.time_taken_in_game < leaderboard[i]["time"]:
-                leaderboard.insert(i, {
-                    "name": self.player_name,
-                    "time": int(self.time_taken_in_game)
-                })
-                break
+        leaderboard.append({
+            "name": self.player_name,
+            "time": int(self.time_taken_in_game)
+        })
+        leaderboard.sort(key = lambda p: p["time"])
         with open("scores.json", "w") as scores_json:
             json.dump(leaderboard, scores_json, indent=3)
         self.time_taken_in_game = 0
@@ -254,6 +252,7 @@ class Game:
 
 
     def next_level(self):
+        self.in_level = False
         self.level += 1
         self.clean()
 
@@ -277,7 +276,7 @@ class Game:
     def control_loop(self):
         frame_count = 0
         while self.running:
-            if self.time_taken_in_game > self.total_time and not self.game_over_:
+            if self.time_taken_in_game > self.total_time and not self.game_over_ and self.in_level:
                 self.game_over()
                 self.game_over_ = True
                 continue
@@ -312,18 +311,18 @@ class Game:
                 if time.time() - self.keybinds_reversed > 10:
                     self.keybinds_reversed = False
                     self.keybinds = self.default_keybinds.copy()
-                    
+
                     if self.boo:
                         for debuff in self.boo.debuffs:
                             if debuff.prop == "reversed":
                                 debuff.delete_sprite()
-                        
 
-            if (self.time_box):
-                self.time_box.text = str(int(self.total_time - self.time_taken_in_game))
-            if (self.key_box):
-                self.key_box.text = str(len(self.captured_key_sprites))
-            self.time_taken_in_game += 1/60
+            if self.in_level:
+                if (self.time_box):
+                    self.time_box.text = str(int(self.total_time - self.time_taken_in_game))
+                if (self.key_box):
+                    self.key_box.text = str(len(self.captured_key_sprites))
+                self.time_taken_in_game += 1/60
 
         pygame.quit()
 
@@ -542,7 +541,7 @@ class Blackout(pygame.sprite.Sprite):
         if time.time() - self.start_time > 3:
             self.game.blackout_sprites.remove(self)
             self.game.all_sprites.remove(self)
-            
+
             if self.game.boo:
                 for debuff in self.game.boo.debuffs:
                     if debuff.prop == "blackout":
@@ -638,10 +637,10 @@ class Boo(pygame.sprite.Sprite):
             self.affected_by_potion = False
             boo = self.images[self.moving]
             self.game.screen.blit(boo, (self.x, self.y))
-        
+
         if self.flash_frames <= 0:
             self.flash_frames = 40
-    
+
     def concat(self, a, b, c):
         yield from a
         yield from b
