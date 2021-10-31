@@ -54,6 +54,7 @@ class Game:
         self.time_taken_in_game = 0
         self.total_time = 300
         self.time_box = None
+        self.key_box = None
         self.player_name = ""
 
         self.keybinds = {
@@ -142,6 +143,7 @@ class Game:
 
         self.time_taken_in_game = 0
         self.time_box = TextBox(self, 208, 3, 6, "Loading")
+        self.key_box = TextBox(self, 20, 1, 6, "0", colour=BUTTON_MAIN)
         BatCompanion(self, self.boo)
 
     def restart_level(self):
@@ -238,6 +240,8 @@ class Game:
 
             if (self.time_box):
                 self.time_box.text = str(int(self.total_time - self.time_taken_in_game))
+            if (self.key_box):
+                self.key_box.text = str(len(self.captured_key_sprites))
             self.time_taken_in_game += 1/60
 
         pygame.quit()
@@ -771,7 +775,7 @@ class TextInput(pygame.sprite.Sprite):
 
 
 class TextBox(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, font_size, text):
+    def __init__(self, game, x, y, font_size, text, colour=BUTTON_TEXT_COLOUR):
         pygame.sprite.Sprite.__init__(self)
         game.all_sprites.add(self)
 
@@ -781,11 +785,12 @@ class TextBox(pygame.sprite.Sprite):
         self.height = 20
         self.width = 50
         self.text = text
+        self.colour = colour
 
         self.font = pygame.font.Font("assets/font.ttf", font_size)
 
     def draw(self, frame_count):
-        text = self.font.render(self.text, True, BUTTON_TEXT_COLOUR)
+        text = self.font.render(self.text, True, self.colour)
         text_rect = text.get_rect(center=(self.x+self.width/2, self.y+self.height/2))
         self.game.screen.blit(text, (self.x, self.y))
 
