@@ -250,7 +250,7 @@ class Kid(pygame.sprite.Sprite):
         self.y = points[0][1]
 
         self.width = 16
-        self.height = 20
+        self.height = 32
 
         self.images = {
             "down": pygame.image.load("assets/kid/down.png"),
