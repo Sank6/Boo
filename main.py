@@ -150,6 +150,9 @@ class Game:
 
         for key in kid_coords:
             Kid(self, kid_coords[key])
+
+        for sprite in self.captured_key_sprites:
+            self.captured_key_sprites.remove(sprite)
         
         self.time_box = TextBox(self, 208, 3, 6, "Loading")
         self.key_box = TextBox(self, 20, 1, 6, "0", colour=BUTTON_MAIN)
@@ -361,7 +364,7 @@ class Witch(pygame.sprite.Sprite):
         ]
 
         self.potionDist = 16*4
-        self.potion_timeout = 2
+        self.potion_timeout = 5
         self.last_potion_thrown_at = 0
         self.direction_index = 0
 
@@ -400,7 +403,7 @@ class Potion(pygame.sprite.Sprite):
         self.potion_effects = [
             "speed up",
             "slow down",
-            "do nothing"
+            "stun"
         ]
 
         self.len = 1
@@ -432,7 +435,8 @@ class Potion(pygame.sprite.Sprite):
         elif potion_effect == 1:
             self.game.boo.speed = 0.25
         elif potion_effect == 2:
-            pass
+            self.game.boo.stunned = True
+            self.game.boo.stun_timer = time.time()
 
 
 class Barrier(pygame.sprite.Sprite):
@@ -468,6 +472,10 @@ class Boo(pygame.sprite.Sprite):
         self.speed = 1
         self.up = True
         self.frames_left = 10
+
+        self.stunned = False
+        self.stun_timer = 0
+        self.stun_timeout = 2
 
         self.images = {
             "left": pygame.image.load("assets/boo/left.png"),
@@ -535,6 +543,13 @@ class Boo(pygame.sprite.Sprite):
             x_delta = 0
         if new_y < 10 or new_y+self.height > 180-10:
             y_delta = 0
+
+        
+        if self.stunned:
+            if time.time() - self.stun_timer > self.stun_timeout:
+                self.stunned = False
+            else:
+                return
 
         self.x += x_delta
         self.y += y_delta
